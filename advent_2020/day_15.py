@@ -1,29 +1,52 @@
-from collections import defaultdict, deque
+import numba
 import numpy as np
-import sys
 
+from collections import defaultdict, deque
+from numba import njit
+from numba.typed import List
+from numba.experimental import jitclass
 from tqdm import tqdm
 
-def game_with_array(starting_numbers, rounds):
-    memory = np.full(rounds, -1)
-    memory[0:len(starting_numbers)] = starting_numbers
-    
-    for round in tqdm(range(len(starting_numbers), rounds)):
-        current_view = memory[0:(round-1)]
-        previous_number = current_view=[-1]
-        if previous_number in memory[0:round-1]:
-            # has been previously spoken
-            # the next number to speak is the difference between the turn number 
-            # when it was last spoken and the time it was spoken before that
-            previous_indexes = np.argwhere(current_view == previous_number)[-2:, 0]
-            second_last_idx, last_idx = previous_indexes
-            next_number = last_idx - second_last_idx
-            memory[round] = next_number
-        else:
-            # has not been previously spoken
-            memory[round] = 0
+ND_SPEC = [
+    ('array', numba.int64[:])
+]
 
-    return memory[-1]
+@jitclass(ND_SPEC)
+class NumbaDeque():
+    def __init__(self):
+        self.array = np.full(2, -1)
+
+    def seen_at_round(self, round):
+        self.array[1] = self.array[0]
+        self.array[0] = round
+
+    def is_full(self):
+        return not(-1 in self.array)
+
+    def next_number(self):
+        if self.is_full(): 
+            return self.array[0] - self.array[1]
+        else:
+            return 0
+
+@njit
+def numba_game(starting_numbers, rounds):
+    "Numba accelerated variant of game(...)"
+    memory = {}
+ 
+    for idx, num in enumerate(starting_numbers):
+        memory[num] = NumbaDeque()
+        memory[num].seen_at_round(idx)
+
+    last_number = starting_numbers[-1]
+    for round in range(len(starting_numbers), rounds):
+        last_number = memory[last_number].next_number()
+        if memory.get(last_number) is None:
+            memory[last_number] = NumbaDeque()
+
+        memory[last_number].seen_at_round(round)
+        
+    return last_number
 
 def game(starting_numbers, rounds):
     memory = defaultdict(lambda: deque(maxlen=2))
@@ -46,6 +69,6 @@ def game(starting_numbers, rounds):
     return last_number
 
 if __name__ == "__main__":
-    input = [ 1,0,18,10,19,6 ]
-    print(f"Part A answer = {game(input, 2020)}")
-    print(f"Part A answer = {game(input, 30000000)}")
+    input = List([ 1,0,18,10,19,6 ])
+    print(f"Part A answer = {numba_game(input, 2020)}")
+    print(f"Part B answer = {numba_game(input, 30000000)}")
