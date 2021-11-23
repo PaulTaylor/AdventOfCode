@@ -1,5 +1,5 @@
-import pytest
 from .day_15 import *
+from numba.typed import List
 
 def test_part_a():
     test_values = [
@@ -17,19 +17,18 @@ def test_part_a():
     for sn, desired in test_values:
         assert game(sn, 2020) == desired
 
-@pytest.mark.skip(reason="skip test because it takes a very long time!")
 def test_part_b():
     test_values = [
-        ([0,3,6], 175594),
-        ([1,3,2], 2578),
-        ([2,1,3], 3544142),
-        ([1,2,3], 261214),
-        ([2,3,1], 6895259),
-        ([3,2,1], 18),
-        ([3,1,2], 362)
+        (List([0,3,6]), 175594),
+        # ([1,3,2], 2578),
+        # ([2,1,3], 3544142),
+        # ([1,2,3], 261214),
+        # ([2,3,1], 6895259),
+        # ([3,2,1], 18),
+        # ([3,1,2], 362)
     ]
 
     for sn, desired in test_values:
-        assert game(sn, 30000000) == desired
+        assert numba_game(sn, 30000000) == desired
 
     
