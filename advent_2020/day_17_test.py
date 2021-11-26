@@ -1,5 +1,6 @@
 import numpy as np
-from .day_17 import *
+
+from .day_17 import create_starting_grid, simulation_round
 
 test_input = """.#.
 ..#

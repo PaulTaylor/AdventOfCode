@@ -1,4 +1,4 @@
-from .day_16 import *
+from .day_16 import parse_input, part_a, part_b
 
 test_input = """class: 1-3 or 5-7
 row: 6-11 or 33-44
@@ -27,10 +27,10 @@ nearby tickets:
 
 def test_parse_input():
     rules, my_ticket, other_tickets = parse_input(test_input)
-    
+
     assert len(rules) == 3
     assert rules["class"] == [(1, 3), (5, 7)]
-    
+
     assert my_ticket == [7,1,14]
 
     assert len(other_tickets) == 4

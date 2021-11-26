@@ -7,11 +7,11 @@ def mask_value(value, mask):
     value_string = f"{value:036b}"
     assert len(value_string) == len(mask)
 
-    new_bit_string = "".join([ 
-        c if c != "X" else value_string[idx] 
-        for idx, c in enumerate(mask) 
+    new_bit_string = "".join([
+        c if c != "X" else value_string[idx]
+        for idx, c in enumerate(mask)
     ])
-    
+
     return int(new_bit_string, 2)
 
 def part_a(lines):
@@ -90,10 +90,10 @@ def part_b(lines):
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_14_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         lines = f.readlines()
-    
-    # Part A    
+
+    # Part A
     a_result = part_a(lines)
     print(f"sum(mem) for Part A = {a_result}")
 

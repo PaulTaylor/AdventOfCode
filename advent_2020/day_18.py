@@ -1,6 +1,7 @@
-from parsimonious.grammar import Grammar, NodeVisitor
 from pathlib import Path
+from parsimonious.grammar import Grammar, NodeVisitor
 
+# pylint: disable=eval-used
 
 grammar = Grammar("""
     formula         = num_or_bracket (ws* op ws* num_or_bracket)+
@@ -12,12 +13,13 @@ grammar = Grammar("""
 """)
 
 class FormulaVisitor(NodeVisitor):
-    
-    def generic_visit(self, node, visited_children):
-        raise NotImplementedError('No visitor method was defined for this expression: %s' %
-                                  node.expr_name)
+    "AST walker that computes the answer for Part A"
 
-    def visit_formula(self, node, visited_children):
+    def generic_visit(self, node, visited_children):
+        raise NotImplementedError(
+            f'No visitor method was defined for this expression: {node.expr_name}')
+
+    def visit_formula(self, _, visited_children):
         # At this point, visited children will already be evaluated (including any nested brackets)
         # all we need to do is follow the rules from the scenario (strict left/right evaluation)
         # with no BODMAS
@@ -30,33 +32,39 @@ class FormulaVisitor(NodeVisitor):
 
         return acc
 
-    def visit_bracketed(self, node, visited_children):
+    def visit_bracketed(self, _, visited_children):
         # Drop the surrounding bracket tokens and just return the result
         # of the internal formula evaluation
         _, result, _ = visited_children
         return result
 
-    def visit_num_or_bracket(self, node, visited_children):
+    def visit_num_or_bracket(self, _, visited_children):
         # Just return the child - that'll be what we actually want to consider
         return visited_children[0]
 
-    def visit_ws(self, node, visited_children):
+    def visit_ws(self, *_):
         pass # no-one cares about whitespace
 
-    def visit_(self, node, visited_children):
+    def visit_(self, _, visited_children):
         # This is the whitespace wrapper - filter out any None's in the return values
         return list(filter(lambda x: x, visited_children))
 
-    def visit_op(self, node, visited_children):
+    def visit_op(self, node, _):
         # Op just needs the return the symbol
         return node.text
 
-    def visit_num(self, node, visited_children):
+    def visit_num(self, node, _):
         # nums just return the integer value
         return int(node.text)
 
 class PartBVisitor(FormulaVisitor):
-    def visit_formula(self, node, visited_children):
+    "Alternative AST walker that computes the answer for Part B"
+
+    def generic_visit(self, node, visited_children):
+        raise NotImplementedError(
+            f'No visitor method was defined for this expression: {node.expr_name}')
+
+    def visit_formula(self, _, visited_children):
         # Customise for adjusted precedence rules
         # Addition is now more important than multiplication
         first, the_rest = visited_children
@@ -96,7 +104,7 @@ def evaluate_b(expression):
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_18_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         raw = f.read().strip()
 
     # Part A

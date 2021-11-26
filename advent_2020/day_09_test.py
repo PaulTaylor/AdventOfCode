@@ -1,10 +1,10 @@
-from .day_09 import *
+from .day_09 import XmasDecoder, XmasException, find_weakness
 
 sequence = [35, 20, 15, 25, 47, 40, 62, 55, 65, 95,
             102, 117, 150, 182, 127, 219, 299, 277, 309, 576]
 
 def test_xmas_a():
-    
+
     xd = XmasDecoder(preamble_length=5)
     try:
         for num in sequence:

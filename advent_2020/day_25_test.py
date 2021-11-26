@@ -1,4 +1,4 @@
-from .day_25 import *
+from .day_25 import transform_sn, do_part_a
 
 def test_transform_sn():
     assert transform_sn(7, 8) == 5764801

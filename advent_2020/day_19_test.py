@@ -1,5 +1,5 @@
-from .day_19 import *
 from parsimonious import ParseError
+from .day_19 import rules_to_grammar
 
 test_input = """0: 4 1 5
 1: 2 3 | 3 2
@@ -15,12 +15,12 @@ aaabbb
 aaaabbb"""
 
 def test_part_a():
-    rules, input = test_input.split("\n\n")
+    rules, input_lines = test_input.split("\n\n")
     grammar = rules_to_grammar(rules)
 
     success = []
     failures = []
-    for idx, line in enumerate(input.splitlines()):
+    for idx, line in enumerate(input_lines.splitlines()):
         try:
             grammar.parse(line)
             success.append(idx)
@@ -79,17 +79,17 @@ aaaabbaabbaaaaaaabbbabbbaaabbaabaaa
 babaaabbbaaabaababbaabababaaab
 aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"""
 
-    rules, input = b_input.split("\n\n")
+    rules, input_lines = b_input.split("\n\n")
     grammar = rules_to_grammar(rules)
     rules_b = rules.replace("8: 42", "8: 42 | 42 8").replace("11: 42 31", "11: 42 31 | 42 11 31")
 
     grammar_b = rules_to_grammar(rules_b)
-    
+
     successes = 0
     failures = 0
     successes_b = 0
     failures_b = 0
-    for line in input.splitlines():
+    for line in input_lines.splitlines():
         try:
             grammar.parse(line)
             successes += 1
@@ -101,7 +101,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"""
             successes_b += 1
         except ParseError as e:
             print(line, " - FAIL")
-            
+
             if "rule_31" in e.__repr__():
                 successes_b += 1
             else:

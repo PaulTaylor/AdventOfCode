@@ -52,7 +52,7 @@ def part_a(raw):
 
 def part_b(raw):
     rules, my_ticket, other_tickets = parse_input(raw)
-    
+
     # Drop invalid tickets
     _, invalid_indexes = part_a(raw)
     for idx in sorted(invalid_indexes, reverse=True):
@@ -60,15 +60,16 @@ def part_b(raw):
 
     # Work out field mapping
     # To start - all fields could be anywhere
-    field_mapping = { f: set(range(0, len(my_ticket))) for f in rules.keys() }
-    
+    field_mapping = { f: set(range(0, len(my_ticket))) for f in rules }
+
     # Check each ticket in turn - and remove invalid field mappings
     for t in other_tickets:
         for f_idx, value in enumerate(t):
-            for f_name, f_possibles in field_mapping.items(): # checking to see if field f_idx could be f_name
+            # checking to see if field f_idx could be f_name
+            for f_name, f_possibles in field_mapping.items():
                 if f_idx in f_possibles:
                     # this field is still a possibility for this mapping
-                    valid = any([ min <= value <= max for (min, max) in rules[f_name] ])
+                    valid = any(( min <= value <= max for (min, max) in rules[f_name] ))
 
                     if not valid:
                         # This field is not valid under these rules
@@ -92,13 +93,13 @@ def part_b(raw):
             field_mapping[k].remove(final_mapping[field])
 
     return { k: my_ticket[idx] for k, idx in final_mapping.items() }
-    
+
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_16_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         raw = f.read()
-        
+
     print(f"Part A - ticket scanning error rate = {part_a(raw)[0]}")
 
     print("My ticket\n=========================================================")

@@ -1,6 +1,6 @@
-import numpy as np
-
 from pathlib import Path
+
+import numpy as np
 
 
 def prepare_grid(floor_string):
@@ -8,8 +8,9 @@ def prepare_grid(floor_string):
 
 def do_seat(fp, col, row):
     top_left = (max(0, col - 1), max(0, row - 1))
-    bottom_right = (min(col + 2, fp.shape[0]), min(row + 2, fp.shape[1])) # add 2 here because the indexing below is exclusive!
-    
+    # add 2 here because the indexing below is exclusive!
+    bottom_right = (min(col + 2, fp.shape[0]), min(row + 2, fp.shape[1]))
+
     # get the slice of the floor plan between those bounds
     fp_slice = fp[top_left[0]:bottom_right[0], top_left[1]:bottom_right[1]]
     #print("\n", top_left, bottom_right, "\n", fp_slice, "\n--------------------------")
@@ -22,7 +23,7 @@ def do_seat(fp, col, row):
             return '#'
     elif fp[col, row] == "#":
         # No, it's occupied
-        if np.sum(fp_slice == "#") >= 5: 
+        if np.sum(fp_slice == "#") >= 5:
             # four or more adjacent seats are occupied - so we vacate this seat
             # The test about is 5 because we count ourselves in that count
             return 'L'
@@ -35,7 +36,7 @@ def do_seat(fp, col, row):
 
 def simulate(floor_plan):
     result = np.copy(floor_plan)
-    
+
     for col_idx in range(floor_plan.shape[0]):
         for row_idx in range(floor_plan.shape[1]):
             r = do_seat(floor_plan, col_idx, row_idx)
@@ -62,8 +63,8 @@ def do_seat_b(fp, col, row):
         if fp[cand_col, cand_row] in "#L":
             seats_to_consider.append(fp[cand_col, cand_row])
             break
-    
-    
+
+
     # Top-Middle - only decrease row
     cand_row = row
     while cand_row > 0:
@@ -146,7 +147,7 @@ def do_seat_b(fp, col, row):
 
 def simulate_b(floor_plan):
     result = np.copy(floor_plan)
-    
+
     for col_idx in range(floor_plan.shape[0]):
         for row_idx in range(floor_plan.shape[1]):
             r = do_seat_b(floor_plan, col_idx, row_idx)
@@ -156,13 +157,13 @@ def simulate_b(floor_plan):
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_11_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         floor_plan = f.read()
 
     previous_res = prepare_grid(floor_plan)
 
     print(f"Floor plan is of shape {previous_res.shape}")
-    
+
     count = 0
     res = previous_res
     while count < 1 or not np.array_equal(res, previous_res):
@@ -188,4 +189,3 @@ if __name__ == "__main__":
     occupied_seats = np.sum(res == "#")
     print(f"(Sim B) Converged in {count} iterations")
     print(f"(Sim B) There are {occupied_seats} occupied seats in the final result")
-    

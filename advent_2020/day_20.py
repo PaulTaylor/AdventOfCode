@@ -1,12 +1,13 @@
+from collections import defaultdict
+from math import sqrt
+from itertools import product
+from pathlib import Path
+from networkx.algorithms import weakly_connected_components
+
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 
-from collections import defaultdict
-from math import sqrt
-from itertools import product
-from networkx.algorithms import weakly_connected_components
-from pathlib import Path
 
 def create_all_tile_orientations(tiles):
     all_tile_orientations = {}
@@ -48,9 +49,12 @@ def display_image(image):
     image[np.where(image == "O")] = 2
     plt.imshow(image.astype(int))
 
-monster_mask = np.array(list(map(lambda x: [ True if c == "#" else False for c in x ], """                  # 
+# pylint: disable=trailing-whitespace
+monster_mask = np.array([
+    [ c == "#" for c in x ] for x in """                  # 
 #    ##    ##    ###
- #  #  #  #  #  #   """.splitlines())))
+ #  #  #  #  #  #   """.splitlines()])
+# pylint: enable=trailing-whitespace
 
 def look_for_monsters(input_image):
     image = np.copy(input_image) # to avoid side effects
@@ -63,19 +67,20 @@ def look_for_monsters(input_image):
                 (row_idx):(row_idx + monster_mask.shape[0]),
                 (col_idx):(col_idx + monster_mask.shape[1])
             ]
-            
+
             assert image_slice.shape == monster_mask.shape
-            
+
             if all(image_slice[monster_mask] == "#"):
                 image_slice[monster_mask] = "O"
                 monster_count += 1
 
-            # Now we need to copy the image_slice back into the image - as it's not actually a view!!
+            # Now we need to copy the image_slice back into the image
+            # - as it's not actually a view!!
             image[
                 (row_idx):(row_idx + monster_mask.shape[0]),
                 (col_idx):(col_idx + monster_mask.shape[1])
             ] = image_slice
-        
+
     return monster_count, np.sum(image == "#")
 
 def create_tiles(raw):
@@ -112,7 +117,7 @@ def do_part_a(tiles):
 
     G = nx.DiGraph()
 
-    for k, edge_list in edge_lookup.items():
+    for _, edge_list in edge_lookup.items():
         for src, dst in product(edge_list, edge_list):
             if src[0] != dst[0]: # no self-loops
                 if (src[-1] == "bottom" and dst[-1] == "top"):
@@ -120,24 +125,25 @@ def do_part_a(tiles):
                 elif (src[-1] == "right" and dst[-1] == "left"):
                     G.add_edge(src[0:3], dst[0:3], label="rl")
 
-    for idx, comp in enumerate(sorted(weakly_connected_components(G), 
-                            key=lambda nodes: sum(x[1] for x in G.subgraph(nodes).nodes))):
+    for _, comp in enumerate(sorted(weakly_connected_components(G),
+                             key=lambda nodes: sum(x[1] for x in G.subgraph(nodes).nodes))):
         sub_G = G.subgraph(comp).copy()
         #nx.nx_agraph.write_dot(sub_G, f"./out/the-graph-{idx}.dot")
 
-    # This will give a number of different combinations - which are all equivalent.  We'll pick the first one with the least amount of sorting in 
-    sub_G = G.subgraph(min(weakly_connected_components(G), 
+    # This will give a number of different combinations - which are all equivalent.
+    # We'll pick the first one with the least amount of sorting in
+    sub_G = G.subgraph(min(weakly_connected_components(G),
             key=lambda nodes: sum(x[1] for x in G.subgraph(nodes).nodes))).copy()
-
 
     ## We can now answer Part A at this point, by looking for the nodes with degree == 2
     corner_ids = [ int(n[0]) for n in sub_G.nodes if sub_G.degree(n) == 2 ]
     part_a_result = corner_ids[0] * corner_ids[1] * corner_ids[2] * corner_ids[3]
 
-    return part_a_result, sub_G 
+    return part_a_result, sub_G
 
 def do_part_b(tiles, sub_G):
-    # Now we take sub_G, find the top left corner, and fill in the final image by iterating left then down
+    # Now we take sub_G, find the top left corner, and fill in the final
+    # image by iterating left then down
     first_tile = [ x for x in sub_G.nodes if sub_G.in_degree(x) == 0 ]
     assert len(first_tile) == 1
     first_tile_in_col = first_tile[0]
@@ -156,7 +162,7 @@ def do_part_b(tiles, sub_G):
         while this_tile_info:
             #print(this_tile_info, f"\trow={row_idx}, col={col_idx}")
             this_tid = this_tile_info[0]
-            
+
             this_tile = np.rot90(tiles[this_tid], int(this_tile_info[1]))
 
             if this_tile_info[2] == "lr":
@@ -171,7 +177,7 @@ def do_part_b(tiles, sub_G):
                 (row_idx * tile_shape[1]):((row_idx+1)*tile_shape[1]),
                 (col_idx * tile_shape[0]):((col_idx+1)*tile_shape[0])
             ]
-            assert this_tile.shape == image_slice.shape, (tile.shape, image_slice.shape)
+            assert this_tile.shape == image_slice.shape, (tile_shape, image_slice.shape)
             del image_slice # this was just used for a size check
 
             image[
@@ -191,8 +197,12 @@ def do_part_b(tiles, sub_G):
         row_idx += 1
 
     # Check the tile edge duplicates are where they are supposed to be
-    assert grid_size - 1 == sum(np.array_equal(image[idx, :], image[idx + 1, :]) for idx in range(0, image.shape[0] - 1))
-    assert grid_size - 1 == sum(np.array_equal(image[:, idx], image[:, idx + 1]) for idx in range(0, image.shape[0] - 1))
+    assert grid_size - 1 == sum(
+        np.array_equal(image[idx, :], image[idx + 1, :]) for idx in range(0, image.shape[0] - 1)
+    )
+    assert grid_size - 1 == sum(
+        np.array_equal(image[:, idx], image[:, idx + 1]) for idx in range(0, image.shape[0] - 1)
+    )
 
     # Now remove the tile borders, these will be at 9,10, 19,20, etc.
     for idx in np.arange(image.shape[0], -1, -this_tile.shape[0]):
@@ -231,15 +241,14 @@ def do_part_b(tiles, sub_G):
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_20_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         tiles = create_tiles(f.read())
 
     part_a_result, sub_G = do_part_a(tiles)
     print(f"Part A answer = {part_a_result}")
 
-
-    # ## Part B
+    # Part B
     b_result, roughness = do_part_b(tiles, sub_G)
     assert b_result < 2137, "Answer is lower than this"
     assert b_result not in [1972, 2047, 2077, 2092], "Apparently this is also not the answer"
-    print("There are %d monsters and roughness score is %d" % (b_result, roughness))
+    print(f"There are {b_result} monsters and roughness score is {roughness}")

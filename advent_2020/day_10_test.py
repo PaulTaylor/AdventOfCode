@@ -1,6 +1,4 @@
-import networkx as nx
-
-from .day_10 import *
+from .day_10 import create_graph, find_graph_cuts, part_a, part_b, part_b_nx
 
 available_adapters = [16, 10, 15, 5, 1, 11, 7, 19, 6, 12, 4]
 another_set = [28, 33, 18, 42, 31, 14, 46, 20, 48, 47, 24, 23, 49,
@@ -34,5 +32,3 @@ def test_find_graph_cuts():
 
     r = find_graph_cuts(G)
     assert test2_breaks == r
-    
-    

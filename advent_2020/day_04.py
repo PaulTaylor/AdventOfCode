@@ -1,4 +1,4 @@
-import re, sys
+import re
 
 from pathlib import Path
 
@@ -15,7 +15,7 @@ def check_valid(passport):
 
     try:
         for f in required_fields:
-            passport[f]
+            _ = passport[f]
     except KeyError:
         return False
 
@@ -44,24 +44,26 @@ def check_height(val):
 
 def check_valid_strict(passport):
     required_fields = {
-        "byr": lambda x: (len(x) == 4) and (1920 <= int(x) <= 2002), # four digits; at least 1920 and at most 2002.
-        "iyr": lambda x: (len(x) == 4) and (2010 <= int(x) <= 2020), # four digits; at least 2010 and at most 2020.
-        "eyr": lambda x: (len(x) == 4) and (2020 <= int(x) <= 2030), # four digits; at least 2020 and at most 2030.
+        # four digits; at least 1920 and at most 2002.
+        "byr": lambda x: (len(x) == 4) and (1920 <= int(x) <= 2002),
+        # four digits; at least 2010 and at most 2020.
+        "iyr": lambda x: (len(x) == 4) and (2010 <= int(x) <= 2020),
+        # four digits; at least 2020 and at most 2030.
+        "eyr": lambda x: (len(x) == 4) and (2020 <= int(x) <= 2030),
         # height
         #(Height) - a number followed by either cm or in:
         #  - If cm, the number must be at least 150 and at most 193.
         #  - If in, the number must be at least 59 and at most 76.
         "hgt": check_height, # (Height)
-        "hcl": lambda x: hc_pattern.match(x), #(Hair Color)
+        "hcl": hc_pattern.match, #(Hair Color)
         "ecl": lambda x: x in 'amb blu brn gry grn hzl oth'.split(" "), #(Eye Color)
-        "pid": lambda x: pid_pattern.match(x), #(Passp
+        "pid": pid_pattern.match, #(Passp
     }
 
     try:
         for f, check in required_fields.items():
             assert check(passport[f]), f"field {f} with value {passport.get(f, 'None')} fails check"
-    except AssertionError as e:
-        #raise e
+    except AssertionError:
         return False
     except KeyError:
         return False
@@ -90,13 +92,13 @@ def process_lines(lines):
 
     validity = sum(check_valid(p) for p in passports)
     strict_validity = sum(check_valid_strict(p) for p in passports)
-    
+
     return validity, strict_validity
 
 if __name__ == "__main__":
 
     p = Path(__file__).parent / "input" / 'day_04_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         lines = f.readlines()
 
     validity, strict_validity = process_lines(lines)

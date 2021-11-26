@@ -7,6 +7,6 @@ def test_decode_seat_string():
         'FFFBBBFRRR': (14, 7, 119),
         'BBFFBBFRLL': (102, 4, 820)
     }
-    
+
     for s, res in test_strings.items():
         assert res == decode_seat_string(s)

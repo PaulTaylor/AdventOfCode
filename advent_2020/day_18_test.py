@@ -1,4 +1,4 @@
-from .day_18 import *
+from .day_18 import grammar, evaluate, evaluate_b
 
 def test_grammar():
     ast = grammar.parse("1 + 2")
@@ -7,7 +7,7 @@ def test_grammar():
 def test_evaluate():
     assert evaluate("1 + 2 * 3 + 4 * 5 + 6") == 71
     assert evaluate("1 + (2 * 3) + (4 * (5 + 6))") == 51
-    
+
     assert evaluate("2 * 3 + (4 * 5)") == 26
     assert evaluate("5 + (8 * 3 + 9 + 3 * 4 * 3)") == 437
     assert evaluate("5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))") == 12240

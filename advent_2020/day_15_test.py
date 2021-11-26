@@ -1,5 +1,7 @@
 import pytest
-from .day_15 import *
+
+from .day_15 import game
+
 
 def test_part_a():
     test_values = [
@@ -31,5 +33,3 @@ def test_part_b():
 
     for sn, desired in test_values:
         assert game(sn, 30000000) == desired
-
-    

@@ -1,4 +1,4 @@
-from .day_21 import *
+from .day_21 import part_a, part_b
 
 test_string = """mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
 trh fvjkl sbzzf mxmxvkd (contains dairy)

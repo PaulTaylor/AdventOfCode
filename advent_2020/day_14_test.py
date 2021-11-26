@@ -1,4 +1,4 @@
-from .day_14 import *
+from .day_14 import mask_value, part_a, part_b
 
 def test_mask_value():
     mask = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X"
@@ -8,8 +8,8 @@ def test_mask_value():
         (0, 64)
     ]
 
-    for input, desired in test_values:
-        assert mask_value(input, mask) == desired
+    for input_value, desired in test_values:
+        assert mask_value(input_value, mask) == desired
 
 def test_part_a():
     lines = """mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X

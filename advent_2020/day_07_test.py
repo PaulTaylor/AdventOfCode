@@ -1,5 +1,5 @@
-from .day_07 import *
 from collections import Counter
+from .day_07 import parse_rules, find_combinations, forward_lookup_for
 
 def test_bag_rules():
     rules = """light red bags contain 1 bright white bag, 2 muted yellow bags.

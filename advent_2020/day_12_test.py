@@ -1,4 +1,4 @@
-from .day_12 import *
+from .day_12 import Ship, ShipWithWaypoint
 
 def test_ship():
     instructions = ["F10","N3","F7","R90","F11"]

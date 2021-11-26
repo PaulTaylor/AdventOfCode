@@ -1,4 +1,4 @@
-from .day_13 import *
+from .day_13 import get_buses_at, parse_input, find_next_bus_for, do_part_b, finished
 
 def test_get_buses_at():
     routes = [7,13,59,31,19]
@@ -31,7 +31,7 @@ def test_with_input():
 def test_find_next_bus_for():
     routes = [7,13,59,31,19]
     time = 939
-    dep_bus, dep_time = find_next_bus_for(routes, time)
+    _, dep_time = find_next_bus_for(routes, time)
     assert dep_time - time == 5
 
 def test_finshed():

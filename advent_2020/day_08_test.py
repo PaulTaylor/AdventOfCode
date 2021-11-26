@@ -1,4 +1,4 @@
-from .day_08 import *
+from .day_08 import run_code_safe, LoopException
 
 def test_code():
     code = """nop +0

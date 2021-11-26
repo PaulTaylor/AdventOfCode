@@ -1,11 +1,8 @@
-import pytest
-import numpy as np
-
-from .day_23 import *
-from numba.typed import List
+from tqdm import tqdm
+from .day_23 import Ring
 
 def test_part_a():
-    ring = Ring(List([ int(x) for x in "389125467"]))
+    ring = Ring([ int(x) for x in "389125467"])
     assert str(ring) == "25467389"
 
     for desired in [

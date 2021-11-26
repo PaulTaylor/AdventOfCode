@@ -12,7 +12,7 @@ def check_slope(slope, right, down):
     while coords[1] < len(slope):
 
         slope_line = slope[coords[1]].strip() * dupe_count
-        
+
         try:
             count += 1 if slope_line[coords[0]] != '.' else 0
         except IndexError:
@@ -25,7 +25,7 @@ def check_slope(slope, right, down):
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_03_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         lines = f.readlines()
         print(check_slope(lines, 3, 1))
 
@@ -35,9 +35,8 @@ if __name__ == "__main__":
 
         res = [ check_slope(lines, right, left) for right, left in runs ]
         assert res[1] == 214
-        
+
         output = 1
         for x in res:
             output *= x
         print(output)
-

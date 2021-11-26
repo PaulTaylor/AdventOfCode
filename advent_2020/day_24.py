@@ -1,11 +1,12 @@
-""" Going to use a hex grid with cube co-ordinates here.  
+"""
+Going to use a hex grid with cube co-ordinates here.
 Reference: https://www.redblobgames.com/grids/hexagons/
 co-ordinates are (x,y,z)
 Each direction on the hex grid is a combination of two directions on the cube grid:
 - east = +x -y
 -   se = -y +z
 -   sw = -x +z
-- west = -x +y 
+- west = -x +y
 -   nw = +y -z
 -   ne = +x -z
 
@@ -33,7 +34,7 @@ def parse_input(raw):
 
 def do_part_a(tile_steps):
     # Create the floor
-    # - indexed by co-ordinate tuple - True if black 
+    # - indexed by co-ordinate tuple - True if black
     floor = {}
 
     for tile_step in tile_steps:
@@ -69,7 +70,7 @@ def do_one_day(floor):
             for z in range(min_z-1, max_z + 2):
                 if x + y + z == 0:
                     to_check.append((x, y, z))
-    
+
     # 3) Perform the update algorithm
     for loc in to_check:
         adj_blacks = 0
@@ -78,17 +79,17 @@ def do_one_day(floor):
             if floor.get(adj_loc):
                 adj_blacks += 1
 
-        if floor.get(loc): 
+        if floor.get(loc):
             # This loc is black
             if adj_blacks == 0 or adj_blacks > 2:
                 # Any black tile with zero or more than 2 black tiles
                 # immediately adjacent to it is flipped to white.
                 # white is analagous to not being on the floor
-                del new_floor[loc] 
-        else: 
+                del new_floor[loc]
+        else:
             # This loc is white
             if adj_blacks == 2:
-                # Any white tile with exactly 2 black tiles immediately 
+                # Any white tile with exactly 2 black tiles immediately
                 # adjacent to it is flipped to black.
                 new_floor[loc] = True
 
@@ -97,10 +98,10 @@ def do_one_day(floor):
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_24_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         raw = f.read()
     tile_steps = parse_input(raw)
-    
+
     # Part A
     floor, num_black = do_part_a(tile_steps)
     print(num_black)
