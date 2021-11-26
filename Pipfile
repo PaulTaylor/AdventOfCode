@@ -9,10 +9,12 @@ numpy = "*"
 tqdm = "*"
 parsimonious = "*"
 matplotlib = "*"
+numba = "*"
 
 [dev-packages]
 pytest = "*"
 pytest-benchmark = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.9"
