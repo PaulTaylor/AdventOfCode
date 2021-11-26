@@ -1,7 +1,6 @@
 import numpy as np
 
-from .day_11 import *
-from pprint import pprint
+from .day_11 import prepare_grid, simulate, simulate_b, do_seat_b
 
 floor_strings = ["""L.LL.LL.LL
 LLLLLLL.LL
@@ -130,16 +129,16 @@ def test_simulate():
         if idx == len(floor_strings) - 1:
             break # last iteration would always error
 
-        fp = prepare_grid(fp_str) 
+        fp = prepare_grid(fp_str)
         assert len(fp) == 10
         assert len(fp) == 10
 
         res = simulate(fp)
         assert np.array_equal(res, prepare_grid(floor_strings[idx + 1]))
-            
+
     # No do the last one again to make sure it doesn't change - per the spec
     new_res = simulate(res)
-    assert np.array_equal(res, new_res) 
+    assert np.array_equal(res, new_res)
 
     assert np.sum(res == "#") == 37
 
@@ -166,15 +165,15 @@ def test_simulate_b():
         if idx == len(floor_strings_b) - 1:
             break # last iteration would always error
 
-        fp = prepare_grid(fp_str) 
+        fp = prepare_grid(fp_str)
         assert len(fp) == 10
         assert len(fp) == 10
 
         res = simulate_b(fp)
         assert np.array_equal(res, prepare_grid(floor_strings_b[idx + 1]))
-            
+
     # No do the last one again to make sure it doesn't change - per the spec
     new_res = simulate_b(res)
-    assert np.array_equal(res, new_res) 
+    assert np.array_equal(res, new_res)
 
     assert np.sum(res == "#") == 26

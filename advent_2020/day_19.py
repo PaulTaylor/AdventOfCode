@@ -1,14 +1,14 @@
 import re
 
-from parsimonious import Grammar, ParseError
 from pathlib import Path
+from parsimonious import Grammar, ParseError
 
 
 def rules_to_grammar(raw_rules):
     rule_strings = raw_rules.split("\n")
 
     grammar_strings = sorted([
-        re.subn("([0-9]+)", 
+        re.subn("([0-9]+)",
                    r"rule_\1",
                    rule.replace(": ", " = ( ").replace(" | " , " ) / ( "))[0] + " )"
         for rule in rule_strings
@@ -20,16 +20,16 @@ def rules_to_grammar(raw_rules):
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_19_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         raw = f.read().strip()
 
-    rules, input = raw.split("\n\n")
+    rules, input_lines = raw.split("\n\n")
 
     grammar = rules_to_grammar(rules)
 
     successes = 0
     failures = 0
-    for line in input.splitlines():
+    for line in input_lines.splitlines():
         try:
             grammar.parse(line)
             successes += 1
@@ -44,11 +44,12 @@ if __name__ == "__main__":
     grammar_b = rules_to_grammar(rules_b)
     successes = 0
     failures = 0
-    for line in input.splitlines():
+    for line in input_lines.splitlines():
         try:
             grammar_b.parse(line)
             successes += 1
         except ParseError as e:
+            # pylint: disable=line-too-long
             # See https://dev.to/meseta/advent-of-code-day-19-abusing-peg-grammar-in-python-the-way-it-s-not-supposed-to-2beg
             # for notes on this hack - not entirely sure if this is parsimonious or a more general issue
             if "rule_31" in e.__repr__():

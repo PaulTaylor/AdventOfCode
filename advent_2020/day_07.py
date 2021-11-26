@@ -8,7 +8,7 @@ count_and_colour_pattern = re.compile("([0-9]+) (.*)$")
 def parse_rules(lines):
     forward_lookup = defaultdict(list)
     reverse_lookup = defaultdict(list)
-    
+
     for raw in lines:
         rule_fwd_lookup, rule_rev_lookup = parse_single_rule(raw.strip())
         for k, v_list in rule_rev_lookup.items():
@@ -25,7 +25,7 @@ def parse_single_rule(line):
     line = line.strip()
     parent, contents = line.split("bags contain")
     parent_colour = parent.strip()
-    
+
     for content in contents.split(", "):
         content = content.strip()
         content_parts = content.split(" ")
@@ -35,7 +35,7 @@ def parse_single_rule(line):
 
         number = int(content_parts[0])
         colour_name = " ".join(content_parts[1:-1])
-        
+
         # Want to create a reverse lookup - so inner colour is the key
         # and the value added is the outer colour
         reverse_lookup[colour_name].append(parent_colour)
@@ -49,7 +49,7 @@ def parse_single_rule(line):
 def find_combinations(bag, reverse_lookup):
     # Results initially contain those bags than can directly contain a $bag
     r = set(reverse_lookup[bag])
-    
+
     # Initialise a queue with those colours to check recursively
     q = deque(r)
 
@@ -64,10 +64,10 @@ def find_combinations(bag, reverse_lookup):
 def forward_lookup_for(target_bag, forward_lookup):
     h = list([target_bag])
     q = deque(h)
-    
-    # because iterations will immediately be incremented for the 
+
+    # because iterations will immediately be incremented for the
     # "master" bag and we don't count that
-    iterations = -1 
+    iterations = -1
 
     while q:
         iterations += 1
@@ -79,7 +79,7 @@ def forward_lookup_for(target_bag, forward_lookup):
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_07_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         rules = f.readlines()
 
     forward_lookup, reverse_lookup = parse_rules(rules)

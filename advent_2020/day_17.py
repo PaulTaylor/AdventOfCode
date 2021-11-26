@@ -1,6 +1,6 @@
-import numpy as np
-
 from pathlib import Path
+
+import numpy as np
 
 
 #
@@ -20,7 +20,7 @@ def create_starting_grid_b(raw):
 def simulation_round(d_in):
     "Step forward one round of the simulation"
 
-    # Because we need to be able to address the cells wrapping the currently 
+    # Because we need to be able to address the cells wrapping the currently
     # "known" space - we need to first expand d by 1 in all directions
     new_shape = (d_in.shape[0] + 2, d_in.shape[1] + 2, d_in.shape[2] + 2)
     d_prime = np.zeros(new_shape)
@@ -38,7 +38,7 @@ def simulation_round(d_in):
             for x in range(d_prime.shape[2]):
                 min_x = max(0, x-1)
                 max_x = min(d_prime.shape[2], x+2) # +2 because exclusive indexing
-                
+
                 d_slice = d_prime[min_z:max_z, min_y:max_y, min_x:max_x]
                 activated = np.sum(d_slice) - d_prime[z,y,x]
 
@@ -46,15 +46,14 @@ def simulation_round(d_in):
                     d_out[z,y,x] = 1 if 2 <= activated <= 3 else 0
                 else: # currently inactive
                     d_out[z,y,x] = 1 if activated == 3 else 0
-    
-    #print(d_out)
+
     return d_out
 
 def simulation_round_b(d_in):
     "Step forward one round of the simulation"
     assert len(d_in.shape) == 4
 
-    # Because we need to be able to address the cells wrapping the currently 
+    # Because we need to be able to address the cells wrapping the currently
     # "known" space - we need to first expand d by 1 in all directions
     new_shape = (d_in.shape[0] + 2, d_in.shape[1] + 2, d_in.shape[2] + 2, d_in.shape[3] + 2)
     d_prime = np.zeros(new_shape)
@@ -75,7 +74,7 @@ def simulation_round_b(d_in):
                 for x in range(d_prime.shape[3]):
                     min_x = max(0, x-1)
                     max_x = min(d_prime.shape[3], x+2) # +2 because exclusive indexing
-                    
+
                     d_slice = d_prime[min_w:max_w, min_z:max_z, min_y:max_y, min_x:max_x]
                     activated = np.sum(d_slice) - d_prime[w,z,y,x]
 
@@ -83,13 +82,12 @@ def simulation_round_b(d_in):
                         d_out[w,z,y,x] = 1 if 2 <= activated <= 3 else 0
                     else: # currently inactive
                         d_out[w,z,y,x] = 1 if activated == 3 else 0
-    
-    #print(d_out)
+
     return d_out
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_17_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         raw = f.read().strip()
 
     # Part A

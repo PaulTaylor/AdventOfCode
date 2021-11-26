@@ -3,6 +3,7 @@ from pathlib import Path
 
 class XmasException(Exception):
     def __init__(self, number):
+        super().__init__(self)
         self.number = number
 
 class XmasDecoder:
@@ -15,8 +16,8 @@ class XmasDecoder:
             # can just add numbers - we've not filled the buffer yet
             self.sliding_window.append(number)
         elif self.is_valid_number(number):
-                self.sliding_window.popleft()
-                self.sliding_window.append(number)
+            self.sliding_window.popleft()
+            self.sliding_window.append(number)
         else:
             # Not a valid input
             raise XmasException(number)
@@ -26,7 +27,7 @@ class XmasDecoder:
             for b_idx, b in enumerate(self.sliding_window):
                 if (a_idx != b_idx) and ((a + b) == number):
                     return True
-        
+
         return False
 
 def find_weakness(sequence, wrong_number):
@@ -36,14 +37,14 @@ def find_weakness(sequence, wrong_number):
             sequence_sum = sum(candidate)
             if sequence_sum == wrong_number:
                 return min(candidate) + max(candidate)
-    
+
     raise Exception(f"Couldn't find the correct subsequence summing to {wrong_number}")
 
 if __name__ == "__main__":
     wrong_number = -1
-    
+
     p = Path(__file__).parent / "input" / 'day_09_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         input_numbers = [ int(x) for x in f.readlines() ]
 
     try:

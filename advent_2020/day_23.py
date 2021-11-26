@@ -4,10 +4,10 @@ from tqdm import tqdm
 
 class Cup(object):
     "This is essentially a linked list element representing a cup in the game"
-    
+
     def __init__(self, value):
         self.value = value
-        self.next = None 
+        self.next = None
         self.prev = None
 
     def __repr__(self):
@@ -15,15 +15,16 @@ class Cup(object):
 
 class Ring(object):
     "This is the state of the cup ring for the game"
-       
+
     def __init__(self, nums):
+        self.head_at_start = None # filled on first round
         self.round = 0
         self.head = Cup(nums[0])
         self.value_cache = {
             nums[0]: self.head
         }
         first_cup = self.head
-        
+
         for n in nums[1:]:
             new_cup = Cup(n)
             new_cup.prev = self.head
@@ -35,7 +36,6 @@ class Ring(object):
             if n == 1:
                 self.cup_1 = new_cup
 
-        
         # Finish connecting the ring
         first_cup.prev = new_cup
         new_cup.next = first_cup
@@ -60,7 +60,7 @@ class Ring(object):
             snip_head.next.value,
             snip_head.next.next.value
         )
-        
+
         # print("removed: ", ",".join(map(str, removed_values)))
 
         # put the ring back without the above 3
@@ -90,7 +90,7 @@ class Ring(object):
         snip_head.prev = self.head
         snip_end.next = after_snipped
         after_snipped.prev = snip_end
-        
+
         # Advance head by one position
         self.head = self.head_at_start.next
 
@@ -110,9 +110,6 @@ class Ring(object):
 if __name__ == "__main__":
     puzzle_input = "739862541"
 
-    # create a fake cup to force a numba compilation
-    Cup(-1)
-
     a_input = np.array([ int(x) for x in puzzle_input ])
     ring = Ring(a_input)
     for _ in range(100):
@@ -122,7 +119,6 @@ if __name__ == "__main__":
     assert ans != "76345298", "Incorrect answer"
     print("The answer to part A is:", ans)
 
-    
     # Part B
     cups = list(map(int, puzzle_input))
     num = max(cups) + 1
@@ -130,9 +126,7 @@ if __name__ == "__main__":
         cups.append(num)
         num += 1
     assert len(cups) == 1e6
-    
-    assert len(cups) == 1e6
-    
+
     ring = Ring(cups)
     for _ in tqdm(range(10000000)):
         ring.do_round()

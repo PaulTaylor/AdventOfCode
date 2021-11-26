@@ -1,4 +1,4 @@
-from .day_02 import *
+from .day_02 import policy1, policy2
 
 def test_ex2a():
     x = [
@@ -17,4 +17,3 @@ def test_ex2b():
     ]
 
     assert policy2(x) == [True, False, False]
-

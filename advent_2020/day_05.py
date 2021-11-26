@@ -1,4 +1,4 @@
-import math, sys
+import math
 
 from pathlib import Path
 
@@ -16,7 +16,7 @@ def decode_seat_string(full_string):
             window_start = window_end - math.floor(mid_point)
         else:
             raise Exception(f"Wat! - {char}")
-    
+
     # Now use the last char to say which to select
     row = window_start if row_string[-1] == "F" else window_end
 
@@ -32,7 +32,7 @@ def decode_seat_string(full_string):
             raise Exception(f"Wat! - {char}")
 
     # Now use the last char to say which to select
-    seat = window_start if seat_string[-1] == "L" else window_end    
+    seat = window_start if seat_string[-1] == "L" else window_end
 
     # Sanity checking
     assert 0 <= row <= 127
@@ -45,8 +45,9 @@ def decode_seat_string(full_string):
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_05_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         lines = [ x.strip() for x in f.readlines() ]
+
     res = [ decode_seat_string(line)[-1] for line in lines]
     print(f"Max Seat ID = {max(res)}")
 

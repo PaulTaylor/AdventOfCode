@@ -1,4 +1,4 @@
-from .day_01 import *
+from .day_01 import worker2, worker3
 
 x = [1721,979,366,299,675,1456]
 

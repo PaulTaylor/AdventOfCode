@@ -8,7 +8,7 @@ def single_line_policy1(line):
     m = pattern.match(line)
     min_count, max_count, letter, password = m.groups()
     min_count, max_count = int(min_count), int(max_count)
-    
+
     letter_count = sum(map(lambda c: c == letter, password))
     return letter_count in range(min_count, max_count + 1)
 
@@ -32,7 +32,7 @@ def policy2(lines):
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_02_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         lines = f.readlines()
         res = policy1(lines)
         print(f"{sum(res)} passwords are valid by policy 1")

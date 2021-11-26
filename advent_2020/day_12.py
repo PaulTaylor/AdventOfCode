@@ -1,4 +1,5 @@
-import math, re
+import math
+import re
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,7 +19,7 @@ class Ship:
     def process(self, instruction):
         action, magntitude = instruction_pattern.match(instruction).groups()
         magntitude = float(magntitude)
-    
+
         if action == "N":
             # Action N means to move north by the given value.
             self.Y -= magntitude
@@ -38,8 +39,8 @@ class Ship:
             # Action R means to turn right the given number of degrees.
             self.heading = (self.heading + magntitude) % 360
         elif action == "F":
-            # Action F means to move forward by the given value in the direction the ship is currently facing.
-            # Deal with special cases first to try and avoid trig
+            # Action F means to move forward by the given value in the direction the ship is
+            # currently facing.  Deal with special cases first to try and avoid trig.
             if self.heading == 0:
                 self.process(f"N{magntitude}") # a move north
             elif self.heading == 90:
@@ -49,7 +50,8 @@ class Ship:
             elif self.heading == 270:
                 self.process(f"W{magntitude}") # a move east
             else:
-                # This'll need trigonometry - we have the hypotenuse distance, we need the opp and adj
+                # This'll need trigonometry - we have the hypotenuse distance,
+                # we need the opp and adj
                 print("** We attempted trigonometry!")
                 x_move = math.asin(math.radians(self.heading)) * magntitude
                 y_move = math.acos(math.radians(self.heading)) * magntitude
@@ -61,11 +63,6 @@ class Ship:
     def manhatten(self):
         return abs(self.X) + abs(self.Y)
 
-import math, re, sys
-
-from dataclasses import dataclass
-
-instruction_pattern = re.compile("([NSEWLRF])([0-9]+)")
 
 @dataclass(repr=True)
 class ShipWithWaypoint:
@@ -74,7 +71,7 @@ class ShipWithWaypoint:
     # West considered negative, east positive
     waypoint_X = 10 # start 10 units east
     waypoint_Y = -1 #   and  1 unit north of the ship
-    
+
     # Ship position (relative to starting position)
     X: int = 0
     Y: int = 0
@@ -82,7 +79,7 @@ class ShipWithWaypoint:
     def process(self, instruction):
         action, magntitude = instruction_pattern.match(instruction).groups()
         magntitude = float(magntitude)
-    
+
         if action == "N":
             # WAYPOINT - Action N means to move north by the given value.
             self.waypoint_Y -= magntitude
@@ -125,7 +122,7 @@ class ShipWithWaypoint:
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_12_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         lines = f.readlines()
 
     s = Ship()

@@ -1,11 +1,10 @@
-import networkx as nx
-import sys
-
 from collections import deque
 from itertools import product
+from pathlib import Path
+
+import networkx as nx
 from networkx.algorithms import connectivity as nxc
 from networkx.algorithms import community as nxcomm
-from pathlib import Path
 
 class XmasException(Exception):
     pass
@@ -25,17 +24,17 @@ def part_a(adapters):
             three_diffs += 1
 
     return one_diffs * three_diffs
-    
+
 
 def _part_a_internal(available, sequence):
     acceptable_min = sequence[-1]
     acceptable_max = sequence[-1] + 3
-    
+
     # Find possible adapters in the remaining list
     q = deque(filter(lambda x: acceptable_min < x <= acceptable_max, available))
-    
+
     if q:
-        for idx, item in enumerate(q):
+        for item in q:
             new_available = available.copy()
             new_available.remove(item)
             new_sequence = (sequence + [item])
@@ -57,7 +56,7 @@ def part_b(adapters):
     "This time we don't have to use all the adapters - we just have to get within 3 of 22"
     available = sorted(adapters)
     device_joltage = available[-1] + 3
-    
+
     result_sequences = [0]
     _part_b_internal(available, device_joltage, [0], result_sequences)
     return result_sequences[0]
@@ -70,7 +69,7 @@ def _part_b_internal(available, device_joltage, sequence, result_sequences):
         result_sequences[0] += 1
         if result_sequences[0] % 100000 == 0:
             print("********", result_sequences[0])
-    
+
     # Find possible adapters in the remaining list
     q = deque(filter(lambda x: acceptable_min < x <= acceptable_max, available))
 
@@ -79,10 +78,10 @@ def _part_b_internal(available, device_joltage, sequence, result_sequences):
             new_available = available.copy()
             new_available.remove(item)
             new_sequence = (sequence + [item])
-            _part_b_internal(new_available, device_joltage, new_sequence, result_sequences)   
+            _part_b_internal(new_available, device_joltage, new_sequence, result_sequences)
 
 def create_graph(s_adapters, device_joltage):
-    
+
     G = nx.DiGraph()
     G.add_node(0)
     G.add_nodes_from(s_adapters)
@@ -112,28 +111,28 @@ def find_graph_cuts(G):
         for x in c:
             for elem in x:
                 nodes_cut.add(elem)
-        
+
         s = min(G.nodes)
         t = min(nodes_cut)
         if s == t:
             break
         else:
             c = nxc.minimum_edge_cut(G, s=s, t=t)
-    
+
     return cuts
 
 def part_b_nx(adapters):
     s_adapters = sorted(adapters)
     device_joltage = s_adapters[-1] + 3
-    
+
     G = create_graph(s_adapters, device_joltage)
-    
+
     # Remove "linear" edges to split the graph into components
     edges_to_remove = find_graph_cuts(G)
     G.remove_edges_from(edges_to_remove)
 
     #nx.nx_agraph.write_dot(G, "cut-graph.dot")
-    
+
     # Iterate over components of graph
     result = 1
     for G_c in nxcomm.asyn_lpa_communities(G):
@@ -145,7 +144,7 @@ def part_b_nx(adapters):
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_10_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         adapters = [ int(x) for x in f.readlines() ]
 
     print(f"Part A => {part_a(adapters)}")

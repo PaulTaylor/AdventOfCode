@@ -1,12 +1,17 @@
-import re, sys
+import re
+
 from pathlib import Path
 
 instruction_pattern = re.compile(r'(nop|acc|jmp) ([-+][0-9]+)')
 
 class LoopException(Exception):
     def __init__(self, ptr, acc):
+        super().__init__(self)
         self.ptr = ptr
         self.acc = acc
+
+    def __repr__(self):
+        return f"LoopException({self.ptr}, {self.acc})"
 
 def run_code_safe(raw_code):
     ptr = 0
@@ -16,7 +21,7 @@ def run_code_safe(raw_code):
     visited_lines = set()
     ptr_history = list()
 
-    while ptr < len(code_lines): 
+    while ptr < len(code_lines):
         # the pointer hasn't dropped off the end of the code
 
         if ptr in visited_lines:
@@ -35,13 +40,13 @@ def run_code_safe(raw_code):
             ptr += num
         elif op == 'nop':
             ptr += 1
-    
+
     print("Terminated normally")
     return acc
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_08_a.txt'
-    with open(p, "rt") as f:
+    with open(p, "rt", encoding="ascii") as f:
         raw_code = f.read()
 
     try:
@@ -53,8 +58,8 @@ if __name__ == "__main__":
 
     # Trying to edit the code to find a terminating version
     code_lines = raw_code.splitlines()
-    
-    for idx in range(len(code_lines)):
+
+    for idx, _ in enumerate(code_lines):
         modified_code = code_lines.copy()
         if "jmp" in code_lines[idx]:
             modified_code[idx] = modified_code[idx].replace("jmp", "nop")
@@ -70,5 +75,3 @@ if __name__ == "__main__":
             break
         except:
             pass # this version didn't terminate
-
-    

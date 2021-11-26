@@ -1,4 +1,4 @@
-from .day_24 import *
+from .day_24 import parse_input, do_part_a, do_one_day
 
 test_input = """sesenwnenenewseeswwswswwnenewsewsw
 neeenesenwnwwswnenewnwwsewnenwseswesw
@@ -49,5 +49,3 @@ def test_part_b():
             desired_idx = int((excl_day) / 10) - 1
             assert num_black == desired_tens[desired_idx], \
                 f"Day {excl_day + 1}: {num_black} and should be {desired[excl_day]}"
-
-    

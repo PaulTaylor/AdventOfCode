@@ -10,7 +10,7 @@ def worker2(x: List[int], sum_target=2020) -> int:
             if (a + b) == sum_target:
                 return a * b
 
-    return None 
+    return None
 
 def worker3(x: List[int], sum_target=2020) -> int:
     for a_idx, a in enumerate(x):
@@ -22,7 +22,7 @@ def worker3(x: List[int], sum_target=2020) -> int:
                 if (a + b + c) == sum_target:
                     return a * b * c
 
-    return None     
+    return None
 
 def worker3_new(x: List[int], sum_target=2020) -> int:
     for a_idx, a in enumerate(x):
@@ -37,11 +37,11 @@ def worker3_new(x: List[int], sum_target=2020) -> int:
                 if (a + b + c) == sum_target:
                     return a * b * c
 
-    return None     
+    return None
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_01_a.txt'
-    with open(p, "r") as f:
+    with open(p, "r", encoding="ascii") as f:
         values = [ int(x) for x in f.readlines() ]
         print(f"Answer for a is {worker2(values)}.")
         print(f"Answer for b is {worker3(values)}.")

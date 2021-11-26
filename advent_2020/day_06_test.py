@@ -1,4 +1,4 @@
-from .day_06 import *
+from .day_06 import anyone_result, everyone_result
 
 test_input = """abc
 
@@ -26,8 +26,8 @@ def test_anyone():
     ]
 
     count = 0
-    for input, desired in zip(test_input, test_results):
-        actual = anyone_result(input)
+    for input_text, desired in zip(test_input, test_results):
+        actual = anyone_result(input_text)
         assert actual == desired
         count += len(actual)
 
@@ -43,8 +43,8 @@ def test_everyone():
     ]
 
     count = 0
-    for input, desired in zip(test_input, test_results):
-        actual = everyone_result(input)
+    for input_text, desired in zip(test_input, test_results):
+        actual = everyone_result(input_text)
         assert actual == desired
         count += len(actual)
 
