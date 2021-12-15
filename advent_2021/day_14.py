@@ -1,6 +1,6 @@
 """
-Advent of Code 2021 - Day XX
-See: https://adventofcode.com/2021/day/XX
+Advent of Code 2021 - Day 14
+See: https://adventofcode.com/2021/day/14
 """
 
 from collections import Counter
@@ -60,7 +60,7 @@ def part_b(template, rules, steps=40):
     for pair, freq in prev_level_counter.items():
         counter[pair[0]] += freq
 
-    # ... added manually
+    # ... added manually)
     counter[template[-1]] += 1
 
     # Calculate the range of values for the result
