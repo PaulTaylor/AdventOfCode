@@ -21,7 +21,7 @@ def sign(x):
     else:
         return 0
 
-def run_simulation(target_location, launch_vx, launch_vy) -> bool:
+def run_simulation(target_location, launch_vx, launch_vy):
     target_min_x, target_max_x, target_min_y, target_max_y = target_location
     probe_x = 0
     probe_y = 0
