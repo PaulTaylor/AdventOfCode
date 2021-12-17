@@ -47,23 +47,22 @@ def run_simulation(target_location, launch_vx, launch_vy):
 
 def part_ab(target_location):
     _, target_max_x, target_min_y, _ = target_location
-    # Just an exhaustive search
-    current_best_height = 0
-
+    
     # Constraints:
     # vx must be high enough to reach the target before the y drops below the range
     # vx must be low enough not to overshoot before y drops below the range
 
-    solutions = set()
+    current_best_height = 0
+    solutions = 0
     for launch_vx in range(0, target_max_x + 1):
         for launch_vy in range(target_min_y, abs(target_min_y) + 1):
             hit, max_height = run_simulation(target_location, launch_vx, launch_vy)
             if hit:
-                solutions |= { (launch_vx, launch_vy) }
+                solutions += 1
                 if max_height > current_best_height:
                     current_best_height = max_height
 
-    return current_best_height, len(solutions)
+    return current_best_height, solutions
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_17_a.txt'
