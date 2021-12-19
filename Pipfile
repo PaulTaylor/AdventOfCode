@@ -10,6 +10,7 @@ tqdm = "*"
 parsimonious = "*"
 matplotlib = "*"
 numba = "*"
+scipy = "*"
 
 [dev-packages]
 pytest = "*"
