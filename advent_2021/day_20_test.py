@@ -1,7 +1,7 @@
-import pytest
-
 from pathlib import Path
-from .day_20 import parse_input, process_image
+
+import pytest
+from .day_20 import parse_input, process_image, part_b
 
 @pytest.fixture
 def puzzle_input():
@@ -21,5 +21,6 @@ def test_process_image(puzzle_input):
     image, fill_value = process_image(enh_algo, image, fill_value)
     assert image.sum() == 35
 
-# def test_part_b(puzzle_input):
-#     assert False
+def test_part_b(puzzle_input):
+    enh_algo, image = puzzle_input
+    assert part_b(enh_algo, image) == 3351
