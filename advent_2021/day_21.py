@@ -85,16 +85,16 @@ async def quantum_future(state, result_futures):
         # and if not, create a new co-routine and schedule it for execution
         if new_state not in result_futures:
             new_corout = quantum_future(new_state, result_futures)
-            result_futures[new_state] = asyncio.ensure_future(new_corout)
+            result_futures[new_state] = asyncio.create_task(new_corout)
 
         # And the pending result to our list of results
         sub_state_futures.append(result_futures[new_state])
 
     # Compute the composite result for this state once all available
-    results = await asyncio.gather(*sub_state_futures)
     return reduce(
         lambda acc, v: (acc[0] + v[0], acc[1] + v[1]),
-        results, (0,0))
+        [ await f for f in sub_state_futures ],
+        (0,0))
 
 def the_quantum_game(p1_start, p2_start):
     "Run a quantum game where each possible dice roll is modelled out"

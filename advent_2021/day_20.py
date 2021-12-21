@@ -9,7 +9,7 @@ import numpy as np
 
 BINARY_CONV_MATRIX = 2**np.arange(9)[::-1]
 
-def _slice_to_idx(image_slice) -> int:
+def _slice_to_idx(b) -> int:
     """
     Convert a 9 element bit array into a single integer value
 
@@ -18,7 +18,6 @@ def _slice_to_idx(image_slice) -> int:
     References: https://stackoverflow.com/a/41069967 &
                 https://stackoverflow.com/a/59273656
     """
-    b = image_slice.reshape((1,9))[0]
     return b.dot(BINARY_CONV_MATRIX)
 
 def parse_input(input_string: str):
@@ -30,63 +29,47 @@ def parse_input(input_string: str):
     ], dtype=int)
     return enh_algo, image
 
-def process_image(enh_algo, image, fill_value):
+def process_image(enh_algo, image, fill_value: str):
     # fill_value contains the current value of the infinite space
-    min_row, max_row = 0, image.shape[0]-1
-    min_col, max_col = 0, image.shape[1]-1
-
-    output = np.zeros((max_row+3, max_col+3), dtype=int)
-    for output_row_idx, row in enumerate(range(min_row-1, max_row+2)):
-        for output_col_idx, col in enumerate(range(min_col-1, max_col+2)):
-            source_start_row = row-1
-            source_end_row = row+2
-            source_start_col = col-1
-            source_end_col = col+2
-
-            image_slice = np.zeros((3,3), dtype=int)
-
-            for slice_row, source_row in enumerate(range(source_start_row, source_end_row)):
-                if source_row < 0 or source_row > max_row:
-                    # OOBs are filled with the fill_value
-                    image_slice[slice_row] = fill_value
+    output = np.zeros((image.shape[0]+2, image.shape[1]+2), dtype=int)
+    for row in range(-1, image.shape[0]+1):
+        for col in range(-1, image.shape[1]+1):
+            bits = ""
+            for source_row in range(row-1, row+2):
+                if source_row < 0 or source_row > image.shape[0]-1:
+                    bits += fill_value * 3  # OOB -> fill_value
                     continue
 
-                for slice_col, source_col in enumerate(range(source_start_col, source_end_col)):
-                    if source_col < 0 or source_col > max_col:
-                        # OOBs are filled with the fill_value
-                        image_slice[slice_row, slice_col] = fill_value
-                        continue
+                for source_col in range(col-1, col+2):
+                    if source_col < 0 or source_col > image.shape[1]-1:
+                        bits += fill_value # OOB -> fill_value
+                    else:
+                        bits += "1" if image[source_row, source_col] else "0"
 
-                    image_slice[slice_row, slice_col] = image[source_row, source_col]
-
-            bit_value_idx = _slice_to_idx(image_slice)
+            bit_value_idx = int(bits, 2)
             output_value = 1 if enh_algo[bit_value_idx] == "#" else 0
-            output[output_row_idx, output_col_idx] = output_value
+            output[row+1, col+1] = output_value
 
     # Determine the new fill_value
-    if fill_value == 0 and enh_algo[0] == "#":
-        # Empty areas would become 1's
-        fill_value = 1
-    elif fill_value == 1 and enh_algo[-1] == ".":
-        # Empty areas change from all 1's to all 0's
-        fill_value = 0
+    if fill_value == "0" and enh_algo[0] == "#":
+        fill_value = "1"
+    elif fill_value == "1" and enh_algo[-1] == ".":
+        fill_value = "0"
 
     return output, fill_value
 
-def part_a(enh_algo, image) -> int:
-    image, fill_value = process_image(enh_algo, image, 0)
+def part_ab(enh_algo, image) -> int:
+    image, fill_value = process_image(enh_algo, image, "0")
     image, fill_value = process_image(enh_algo, image, fill_value)
-    return image.sum()
-
-def part_b(enh_algo, image) -> int:
-    fill_value = 0
-    for _ in range(0, 50):
+    a = image.sum()
+    for _ in range(2, 50):
         image, fill_value = process_image(enh_algo, image, fill_value)
-    return image.sum()
+    return a, image.sum()
 
 if __name__ == "__main__":
     p = Path(__file__).parent / "input" / 'day_20_a.txt'
     with open(p, "r", encoding="ascii") as f:
         enh_algo, input_image = parse_input(f.read())
-        print(f"Answer for a is {part_a(enh_algo, input_image)}.")
-        print(f"Answer for b is {part_b(enh_algo, input_image)}.")
+        a, b = part_ab(enh_algo, input_image)
+        print(f"Answer for a is {a}.")
+        print(f"Answer for b is {b}.")
