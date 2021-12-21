@@ -14,7 +14,6 @@ scipy = "*"
 
 [dev-packages]
 pytest = "*"
-pytest-benchmark = "*"
 pylint = "*"
 pytest-cov = "*"
 
