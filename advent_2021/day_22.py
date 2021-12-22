@@ -25,7 +25,6 @@ def naive_solver(steps):
     "Naive implementation for limited reactor size"
     reactor = defaultdict(lambda: 0) # default reactor state is off
     for step in steps:
-
         for x in range(step.bounds.min_x, step.bounds.max_x+1):
             for y in range(step.bounds.min_y, step.bounds.max_y+1):
                 for z in range(step.bounds.min_z, step.bounds.max_z+1):
@@ -54,36 +53,33 @@ def process_interactions(existing: Bounds, incoming: Bounds):
        incoming.max_z < existing.min_z:
         return [existing]
 
-    # Need to chop the prev bounds in to smaller pieces
-    # order being left, right (x), top, bottom (y), front, back (z)
+
+    # for remaining space and output
+    min_x = existing.min_x
     res = []
 
-    # Counters for remaining space
-    min_x = existing.min_x
-
     if existing.min_x < incoming.min_x:
-        # There is a section of prev strictly to the left of the new cube
         res.append(existing._replace(max_x=incoming.min_x-1))
         min_x = incoming.min_x
+
     if existing.max_x > incoming.max_x:
-        # There is section to the right of the new cube
         res.append(existing._replace(min_x=incoming.max_x+1))
+
     if existing.max_y > incoming.max_y:
-        # There is a section above the incoming cube
         res.append(existing._replace(
             min_x=min_x,
             max_x=min(incoming.max_x, existing.max_x),
             min_y=incoming.max_y+1,
         ))
+
     if existing.min_y < incoming.min_y:
-        # There's a section immediately below current
         res.append(existing._replace(
             min_x=min_x,
             max_x=min(incoming.max_x, existing.max_x),
             max_y=incoming.min_y-1
         ))
+
     if existing.min_z < incoming.min_z:
-        # Section of p immediately in front of current
         res.append(Bounds(
             min_x=min_x,
             max_x=min(incoming.max_x, existing.max_x),
@@ -92,8 +88,8 @@ def process_interactions(existing: Bounds, incoming: Bounds):
             min_z=existing.min_z,
             max_z=incoming.min_z-1
         ))
+
     if existing.max_z > incoming.max_z:
-        # Section of p immediately in behind of current
         res.append(Bounds(
             min_x=min_x,
             max_x=min(existing.max_x, incoming.max_x),
