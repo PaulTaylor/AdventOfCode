@@ -78,12 +78,11 @@ def generate_r2h_states(s0, idx, room_size):
     hallway_occupied = calculate_hallway_occupied(s0)
     door_idx = room_size - 1
     base_cost = 0
-    res = []
     a = s0[idx]
 
     if a.pos < room_size - 1:
         if any(check_occupancy(s0, a.room, p) for p in range(a.pos+1, room_size)):
-            return res # blocked
+            return # blocked
         # We'll assume the hallway door is also clear because of the rules
         base_cost += ((door_idx - a.pos) * MOVE_COSTS[a.typ]) # <- the cost to move to pos 1
 
@@ -99,7 +98,7 @@ def generate_r2h_states(s0, idx, room_size):
             cost = base_cost
             cost += MOVE_COSTS[a.typ] # move into hallway
             cost += MOVE_COSTS[a.typ] * (a.room - new_pos)
-            res.append((new_state, cost))
+            yield (new_state, cost)
 
     # Check right
     max_right_pos = min([11] + [ x-1 for x in hallway_occupied if x > a.room ])
@@ -111,15 +110,12 @@ def generate_r2h_states(s0, idx, room_size):
             cost = base_cost
             cost += MOVE_COSTS[a.typ] # move into hallway
             cost += MOVE_COSTS[a.typ] * (new_pos - a.room)
-            res.append((new_state, cost))
-
-    return res
+            yield (new_state, cost)
 
 def generate_h2r_states(s0, idx, room_size):
     assert s0[idx].room == -1, "not already in the hallway"
     hallway_occupied = calculate_hallway_occupied(s0)
     door_idx = room_size - 1
-    res = []
     a = s0[idx]
     target = FINAL_ROOMS[a.typ]
 
@@ -133,11 +129,11 @@ def generate_h2r_states(s0, idx, room_size):
         if any( x.typ != a.typ for x in others_in_room ):
             # another 'pod of a different type is in the room
             # so I will not move into it
-            return res
+            pass
         elif others_in_room and others_in_room[-1].pos == door_idx:
             # The other pod is blocking me from entering the room
             # can't do anything in this case
-            return res
+            pass
         else:
             # Find which parts of the room are available - will be anything
             # between the door and any 'pods already in the room
@@ -146,9 +142,7 @@ def generate_h2r_states(s0, idx, room_size):
                 new_state = new_tuple(s0, idx, a._replace(room=target, pos=room_idx))
                 cost = MOVE_COSTS[a.typ] * ((right - left)+1)
                 cost += (room_size - room_idx) * MOVE_COSTS[a.typ]
-                res.append((new_state, cost))
-
-    return res
+                yield (new_state, cost)
 
 def generate_next_states(state, room_size):
     for idx, a in enumerate(state):

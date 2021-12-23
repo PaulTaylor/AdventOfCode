@@ -45,33 +45,33 @@ def test_generate_r2h_states():
     # If a pod is faced with an empty hallway - it can move to any pos
     # except those in front of doors
     s = (Amphipod("B", 3, 0),)
-    r = generate_r2h_states(s, 0, 2)
+    r = list(generate_r2h_states(s, 0, 2))
     assert len(r) == len(HALLWAY_POS)
     assert sum(cost for _, cost in r) == 40+30+30+50+70+90+100
     s = (Amphipod("B", 3, 1),)
-    r = generate_r2h_states(s, 0, 2)
+    r = list(generate_r2h_states(s, 0, 2))
     assert sum(cost for _, cost in r) == 30+20+20+40+60+80+90
 
     # And with bigger rooms
     s = (Amphipod("B", 3, 0),)
-    r = generate_r2h_states(s, 0, 4)
+    r = list(generate_r2h_states(s, 0, 4))
     assert len(r) == len(HALLWAY_POS)
     assert sum(cost for _, cost in r) == 60+50+50+70+90+110+120
 
     # If a pod cannot move left - only generate right hand hallway states
     s = (Amphipod("1", -1, 2), Amphipod("B", 3, 0),)
-    r = generate_r2h_states(s, 1, 2)
+    r = list(generate_r2h_states(s, 1, 2))
     assert len(r) == 5
     assert sum(cost for _, cost in r) == 30+50+70+90+100
     # If a pod cannot move right...
     s = (Amphipod("1", -1, 4), Amphipod("B", 3, 0),)
-    r = generate_r2h_states(s, 1, 2)
+    r = list(generate_r2h_states(s, 1, 2))
     assert len(r) == 2
     assert sum(cost for _, cost in r) == 40+30
 
     # And for bigger rooms
     s = (Amphipod("1", -1, 2), Amphipod("B", 3, 2),)
-    r = generate_r2h_states(s, 1, 4)
+    r = list(generate_r2h_states(s, 1, 4))
     assert len(r) == 5
     assert sum(cost for _, cost in r) == 30+50+70+90+100
 
@@ -85,7 +85,7 @@ def test_generate_r2h_states():
         Amphipod(typ='C', room=7, pos=1),
         Amphipod(typ='D', room=-1, pos=6),
         Amphipod(typ='D', room=9, pos=1))
-    r = generate_r2h_states(s, 7, 2)
+    r = list(generate_r2h_states(s, 7, 2))
     assert len(r) == 3
     assert sum(x[0][-1].pos for x in r) == 8+10+11
 
@@ -93,7 +93,7 @@ def test_generate_h2r_states():
     # A 'pod that's in the hallway can move to it's own room
     room_size = 2
     s = (Amphipod("C", -1, 1),)
-    r = generate_h2r_states(s, 0, room_size)
+    r = list(generate_h2r_states(s, 0, room_size))
     assert len(r) == room_size
     assert all(p.room == 7 for s, _ in r for p in s)
     assert sum(cost for _, cost in r) == 700+800
@@ -101,7 +101,7 @@ def test_generate_h2r_states():
     # And in bigger rooms
     room_size = 4
     s = (Amphipod("C", -1, 1),)
-    r = generate_h2r_states(s, 0, room_size)
+    r = list(generate_h2r_states(s, 0, room_size))
     assert len(r) == room_size
     assert sum(cost for _, cost in r) == 1000+900+800+700
 
