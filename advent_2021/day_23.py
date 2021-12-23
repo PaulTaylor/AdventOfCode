@@ -15,24 +15,23 @@ HALLWAY_POS = {1,2,4,6,8,10,11}
 
 class HeapWrapper:
     """
-    Create a wrapper around heapq that uses a Counter for "contains" testing.
-    Otherwise the "not in" operation in the a-star algorithm gets slower and
-    slower until it virutally grinds to a halt (40s vs ~25+ minutes)
+    Create a wrapper around heapq that uses a set for "contains" testing.
+
+    Without this the "not in" operation in the a-star algorithm gets slower
+    and slower until it virutally grinds to a halt (35s vs ~25+ minutes)
     """
     def __init__(self) -> None:
         self.heap = []
         heapq.heapify(self.heap)
-        self.counter = Counter()
+        self.counter = set()
 
     def push(self, new_v):
         heapq.heappush(self.heap, new_v)
-        self.counter.update((new_v[1],))
+        self.counter.add(new_v[1])
 
     def pop(self):
         h, v = heapq.heappop(self.heap)
-        self.counter[v] -= 1
-        if self.counter[v] < 1:
-            del self.counter[v]
+        self.counter.remove(v)
         return h, v
 
     def __contains__(self, other):
