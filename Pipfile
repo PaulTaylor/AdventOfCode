@@ -11,6 +11,8 @@ parsimonious = "*"
 matplotlib = "*"
 numba = "*"
 scipy = "*"
+python-constraint = "*"
+z3-solver = "*"
 
 [dev-packages]
 pytest = "*"
