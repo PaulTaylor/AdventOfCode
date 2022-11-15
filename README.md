@@ -1,11 +1,6 @@
 # Advent of Code
 
-My solutions for advent of code .
+My solutions for advent of code.
 
-Tests can be run by calling pytest from the project root.
-
-`pipenv run pytest`
-
-The code for each challenge can be run with the following command-line:
-
-`pipenv run python -m advent_2021.day_01`
+Python solutions for 2020 and 2021 can be found in the python branch.
+Rust solutions in the rust branch for 2022.
