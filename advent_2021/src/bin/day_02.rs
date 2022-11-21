@@ -9,16 +9,15 @@ use std::{
 type AResult<T> = anyhow::Result<T>;
 
 fn parse(lines: &[String]) -> AResult<Vec<(&str, u32)>> {
-    Ok(lines
-        .iter()
-        .map(|l| (*l).split_whitespace())
-        .map(|mut it| {
-            (
-                it.next().expect("a direction"),
-                it.next().expect("a distance").parse::<u32>().expect(" numeric distance"),
-            )
-        })
-        .collect())
+    let mut res = vec!();
+    for l in lines {
+        let mut it = l.split_whitespace();
+        let dir = it.next().expect("no direction");
+        let dst = it.next().expect("no distance").parse()?;
+
+        res.push((dir, dst));
+    }
+    Ok(res)
 }
 
 fn part_a(lines: &[String]) -> AResult<u32> {
