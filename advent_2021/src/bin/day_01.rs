@@ -1,37 +1,57 @@
+use humantime::format_duration;
 use regex::Regex;
 use std::{
     fs::File,
     io::{BufRead, BufReader},
-    iter::zip,
-    time::Instant
+    time::Instant,
 };
 
-fn parse(lines: &[String]) -> Vec<usize> {
-    return lines
+type AResult<T> = anyhow::Result<T>;
+
+fn parse(lines: &[String]) -> AResult<Vec<u16>> {
+    Ok(lines
         .iter()
-        .map(|l| (*l).parse::<usize>().unwrap())
-        .collect();
+        .map(|l| (*l).parse::<u16>())
+        .map(Result::unwrap)
+        .collect())
 }
 
-fn part_a(lines: &[String]) -> usize {
-    let parsed = parse(lines);
-    return zip(parsed.iter(), parsed[1..].iter())
-        .filter(|(prev, next)| next > prev)
-        .count();
+fn part_a(lines: &[String]) -> AResult<u16> {
+    let mut it = parse(lines)?.into_iter();
+
+    let mut acc = 0u16;
+    let mut prev = it.next().unwrap();
+
+    for next in it {
+        acc += (next > prev) as u16;
+        prev = next;
+    }
+
+    Ok(acc)
 }
 
-fn part_b(lines: &[String]) -> usize {
-    let parsed = parse(lines);
-    zip(parsed.windows(3), parsed[1..].windows(3))
-        .map(|(p, n)| -> (usize, usize) { (p.iter().sum(), n.iter().sum()) })
-        .filter(|(p, n)| p < n)
-        .count()
+fn part_b(lines: &[String]) -> AResult<u16> {
+    let parsed = parse(lines)?;
+    let mut it = parsed.windows(3);
+
+    let mut acc = 0u16;
+    let mut prev = it.next().unwrap();
+
+    for next in it {
+        let psum: u16 = prev.iter().sum();
+        let nsum: u16 = next.iter().sum();
+
+        acc += (nsum > psum) as u16;
+        prev = next;
+    }
+
+    Ok(acc)
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() -> AResult<()> {
     // Figure out which exercise we are so we can load the correct input file
     let pattern = Regex::new("[0-9]+$")?;
-    let name = &std::env::args().next().unwrap();
+    let name = &std::env::args().next().expect("binary name not found.");
     let ex = pattern
         .find(name)
         .expect("binary name should contain a number")
@@ -40,20 +60,20 @@ fn main() -> anyhow::Result<()> {
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}_a.txt"))?;
-    let lines: Vec<String> = BufReader::new(file).lines().map(|l| l.unwrap()).collect();
+    let lines: Vec<String> = BufReader::new(file).lines()
+        .map(Result::unwrap)
+        .collect();
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(&lines));
-    println!("Part B result = {}", part_b(&lines));
+    println!("Part A result = {}", part_a(lines.as_slice())?);
+    println!("Part B result = {}", part_b(lines.as_slice())?);
     let end = Instant::now();
-    
-    println!("Run took {}ms", (end - start).as_secs_f32() * 1000.0);
 
-    // Exit cleanly
+    println!("Run took {}ms", format_duration(end - start));
+
     Ok(())
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -71,14 +91,16 @@ mod tests {
         263";
 
     #[test]
-    fn test_a() {
-        let lines: Vec<String> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(&lines), 7);
+    fn test_a() -> AResult<()> {
+        let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
+        assert_eq!(part_a(lines.as_slice())?, 7);
+        Ok(())
     }
 
     #[test]
-    fn test_b() {
-        let lines: Vec<String> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(&lines), 5);
+    fn test_b() -> AResult<()> {
+        let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
+        assert_eq!(part_b(lines.as_slice())?, 5);
+        Ok(())
     }
 }
