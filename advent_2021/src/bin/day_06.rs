@@ -8,16 +8,37 @@ use std::{
 
 type AResult<T> = anyhow::Result<T>;
 
-fn parse(lines: &[String]) -> AResult<Vec<Vec<char>>> {
-    panic!("Not implemented");
+fn parse(lines: &[String]) -> AResult<Vec<u64>> {
+    Ok(lines[0].split(',').map(|s| s.parse().unwrap()).collect())
 }
 
-fn part_a(lines: &[String]) -> AResult<u32> {
-    panic!("Not implemented");
+fn solve(lines: &[String], days: u32) -> AResult<u64> {
+    let initial_ages = parse(lines)?;
+
+    let mut ages = [0u64; 9];
+    for a in &initial_ages {
+        ages[*a as usize] += 1;
+    }
+
+    for _day in 0..days {
+        let zero_fish = ages[0];
+        for a in 1..ages.len() {
+            ages[(a-1) as usize] = ages[a] as u64;
+        }
+        ages[6] += zero_fish;
+        ages[8] = zero_fish;
+    }
+
+
+    Ok(ages.iter().sum::<u64>())
 }
 
-fn part_b(lines: &[String]) -> AResult<u32> {
-    panic!("Not implemented");
+fn part_a(lines: &[String]) -> AResult<u64> {
+    solve(lines, 80)
+}
+
+fn part_b(lines: &[String]) -> AResult<u64> {
+    solve(lines, 256)
 }
 
 fn main() -> AResult<()> {
@@ -49,23 +70,19 @@ fn main() -> AResult<()> {
 mod tests {
     use super::*;
 
-    const TEST_INPUT: &str = "Some
-    input
-    string";
+    const TEST_INPUT: &str = "3,4,3,1,2";
 
     #[test]
     fn test_a() -> AResult<()> {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        panic!("Add assert value");
-        assert_eq!(part_a(lines.as_slice())?, -1);
+        assert_eq!(part_a(lines.as_slice())?, 5934);
         Ok(())
     }
 
     #[test]
     fn test_b() -> AResult<()> {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        panic!("Add assert value");
-        // assert_eq!(part_b(lines.as_slice())?, -1);
-        // Ok(())
+        assert_eq!(part_b(lines.as_slice())?, 26984457539u64);
+        Ok(())
     }
 }
