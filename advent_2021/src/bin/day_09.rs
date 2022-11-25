@@ -61,7 +61,7 @@ fn part_b(lines: &[String], low_points: Vec<(usize,usize)>) -> AResult<u32> {
         while basin.len() > start_size {
             start_size = basin.len();
             let mut new_points = HashSet::new();
-
+            
             for (row, col) in basin.iter() {
                 if row > &0 && grid[row-1][*col] < 9 {
                     new_points.insert((row-1, *col));
@@ -76,7 +76,7 @@ fn part_b(lines: &[String], low_points: Vec<(usize,usize)>) -> AResult<u32> {
                     new_points.insert((*row, col+1));
                 }
             }
-
+            
             basin.extend(new_points);
         }
         basins.push(basin);
