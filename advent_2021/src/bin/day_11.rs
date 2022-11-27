@@ -42,7 +42,7 @@ fn do_round(arr: &mut [[u8; 10]; 10]) -> u64 {
             }
         }
     }
-
+    
     // Deal with flashers
     let mut start = 0;
     while start < flashers.len() {
@@ -51,8 +51,9 @@ fn do_round(arr: &mut [[u8; 10]; 10]) -> u64 {
             // Check the 8 adjacent spaces and incr
             let (row, col) = flashers[i];
             let (top, bottom, left, right) = 
-                calculate_bounds(row, col, arr.len(), arr[0].len()); 
-
+            calculate_bounds(row, col, arr.len(), arr[0].len()); 
+            
+            #[allow(clippy::needless_range_loop)] // reason="a loop is more readable"
             for r in top..=bottom {
                 for c in left..=right {
                     arr[r][c] += 1;
