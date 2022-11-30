@@ -205,8 +205,7 @@ mod tests {
     #[test]
     fn test_b() -> AResult<()> {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        panic!("Add assert value");
-        // assert_eq!(part_b(lines.as_slice())?, -1);
-        // Ok(())
+        part_b(lines.as_slice())?;
+        Ok(())
     }
 }
