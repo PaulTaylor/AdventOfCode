@@ -10,7 +10,7 @@ use std::{
 type AResult<T> = anyhow::Result<T>;
 type Instructions = (Vec<(usize, usize)>, Vec<(char, usize)>);
 
-fn _print_grid(grid: &Vec<Vec<char>>) {
+fn _print_grid(grid: &[Vec<char>]) {
     println!("================================");
     for (idx, row) in grid.iter().enumerate() {
         println!("{:02} {}", idx, row.iter().map(|x| if *x == '.' { ' ' } else { *x }).collect::<String>())
@@ -75,8 +75,8 @@ fn fold(grid: &mut Vec<Vec<char>>, fold_ax: char, fold_idx: usize) {
 
 fn part_a(lines: &[String]) -> AResult<u64> {
     let (points, folds) = parse(lines)?;
-    let row_count = *points.iter().map(|(x,y)| y).max().unwrap() as usize;
-    let col_count = *points.iter().map(|(x,y)| x).max().unwrap() as usize;
+    let row_count = *points.iter().map(|(_,y)| y).max().unwrap() as usize;
+    let col_count = *points.iter().map(|(x,_)| x).max().unwrap() as usize;
 
     let mut grid: Vec<Vec<char>> = (0..=row_count).map(|_| Vec::from_iter(repeat('.').take(col_count + 1))).collect();
 
@@ -102,8 +102,8 @@ fn part_a(lines: &[String]) -> AResult<u64> {
 
 fn part_b(lines: &[String]) -> AResult<&str> {
     let (points, folds) = parse(lines)?;
-    let row_count = *points.iter().map(|(x,y)| y).max().unwrap() as usize;
-    let col_count = *points.iter().map(|(x,y)| x).max().unwrap() as usize;
+    let row_count = *points.iter().map(|(_,y)| y).max().unwrap() as usize;
+    let col_count = *points.iter().map(|(x,_)| x).max().unwrap() as usize;
 
     let mut grid: Vec<Vec<char>> = (0..=row_count).map(|_| Vec::from_iter(repeat('.').take(col_count + 1))).collect();
 
