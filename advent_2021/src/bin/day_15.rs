@@ -80,7 +80,7 @@ fn expand(grid: &mut Vec<Vec<u64>>) {
     }
 }
 
-fn solve(map: &Vec<Vec<u64>>) -> AResult<u64> {
+fn solve(map: &[Vec<u64>]) -> AResult<u64> {
     let dist: &mut HashMap<(usize, usize), u64> =
         &mut HashMap::with_capacity(map.len() * map.len());
     dist.insert((0, 0), 0);
@@ -103,41 +103,17 @@ fn solve(map: &Vec<Vec<u64>>) -> AResult<u64> {
         
         let Cell(row, col, distance) = u;
 
-        if row > 1 {
-            let next_cost = map[row - 1][col];
-            let alt = if distance < u64::MAX { distance + next_cost } else { u64::MAX };
-            if alt < dist[&(row - 1, col)] {
-                dist.insert((row - 1, col), alt);
-                q.replace(Cell(row - 1, col, alt));
+        for (d_row, d_col) in [ (-1isize, 0isize), (1, 0), (0, -1), (0, 1) ] {
+            let n_row: usize =  (row as isize + d_row) as usize;
+            let n_col: usize = (col as isize + d_col) as usize;
+            if let Some(next_cost) = map.get(n_row).and_then(|r| r.get(n_col)) {
+                let alt = if distance < u64::MAX { distance + next_cost } else { u64::MAX };
+                if alt < dist[&(n_row, n_col)] {
+                    dist.insert((n_row, n_col), alt);
+                    q.replace(Cell(n_row, n_col, alt));
+                }
             }
         }
-
-        if col > 1 {
-            let next_cost = map[row][col - 1];
-            let alt = if distance < u64::MAX { distance + next_cost } else { u64::MAX };
-            if alt < dist[&(row, col - 1)] {
-                dist.insert((row, col - 1), alt);
-                q.replace(Cell(row, col - 1, alt));
-            }
-        }
-
-        if row < map.len() - 1 {
-            let next_cost = map[row + 1][col];
-            let alt = if distance < u64::MAX { distance + next_cost } else { u64::MAX };
-            if alt < dist[&(row + 1, col)] {
-                dist.insert((row + 1, col), alt);
-                q.replace(Cell(row + 1, col, alt));
-            }
-        }
-
-        if col < map[0].len() - 1 {
-            let next_cost = map[row][col + 1];
-            let alt = if distance < u64::MAX { distance + next_cost } else { u64::MAX };
-            if alt < dist[&(row, col + 1)] {
-                dist.insert((row, col + 1), alt);
-                q.replace(Cell(row, col + 1, alt));
-            }
-        };
     }
 
     Ok(*dist.get(&(map.len()-1, map[0].len()-1)).unwrap())
