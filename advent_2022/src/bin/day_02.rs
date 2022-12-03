@@ -99,7 +99,7 @@ mod tests {
     #[test]
     fn test_b() -> AResult<()> {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        // assert_eq!(part_b(lines.as_slice())?, 12);
+        assert_eq!(part_b(lines.as_slice())?, 12);
         Ok(())
     }
 }
