@@ -57,7 +57,7 @@ fn main() -> AResult<()> {
     println!("Part B result = {}", part_b(lines.as_slice())?);
     let end = Instant::now();
 
-    println!("Run took {}ms", format_duration(end - start));
+    println!("Run took {}", format_duration(end - start));
 
     Ok(())
 }
