@@ -1,27 +1,23 @@
 use humantime::format_duration;
 use regex::Regex;
 use std::{
+    collections::HashSet,
     fs::File,
     io::{BufRead, BufReader},
-    time::Instant, collections::HashSet,
+    time::Instant,
 };
 
 type AResult<T> = anyhow::Result<T>;
 
 fn part_a(line: &str) -> AResult<usize> {
-    let window_size = 4;
-    let chars: Vec<_> = line.chars().collect();
-    for (i, grp) in chars.windows(window_size).enumerate() {
-        let set: HashSet<&char> = HashSet::from_iter(grp);
-        if set.len() == window_size {
-            return Ok(i + window_size);
-        }
-    }
-    Err(anyhow::format_err!("Not found"))
+    solve(line, 4)
 }
 
 fn part_b(line: &str) -> AResult<usize> {
-    let window_size = 14;
+    solve(line, 14)
+}
+
+fn solve(line: &str, window_size: usize) -> AResult<usize> {
     let chars: Vec<_> = line.chars().collect();
     for (i, grp) in chars.windows(window_size).enumerate() {
         let set: HashSet<&char> = HashSet::from_iter(grp);
