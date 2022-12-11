@@ -6,33 +6,32 @@ use std::{collections::VecDeque, fs, path::Path, time::Instant};
 type AResult<T> = anyhow::Result<T>;
 
 #[derive(Debug, PartialEq, Eq)]
-struct Monkey<'m> {
+struct Monkey {
     id: usize,
     items: VecDeque<usize>,
     op: char,
-    operand: &'m str,
+    operand: Option<usize>,
     test_div: usize,
     dest_t: usize,
     dest_f: usize,
     inspects: usize,
 }
 
-impl Monkey<'_> {
+impl Monkey {
     fn new(c: Captures) -> Option<Monkey> {
         Some(Monkey {
-            id: c.name("monkey").map(|s| s.as_str().parse().unwrap())?,
+            id: c.name("monkey")?.as_str().parse().ok()?,
             items: c
                 .name("items")?
                 .as_str()
                 .split(", ")
-                .into_iter()
-                .map(|s| s.parse().unwrap())
+                .flat_map(|s| s.parse())
                 .collect(),
             op: c.name("op")?.as_str().chars().next()?,
-            operand: c.name("operand")?.as_str(),
-            test_div: c.name("div")?.as_str().parse().unwrap(),
-            dest_t: c.name("dest_t")?.as_str().parse().unwrap(),
-            dest_f: c.name("dest_f")?.as_str().parse().unwrap(),
+            operand: c.name("operand")?.as_str().parse().ok(),
+            test_div: c.name("div")?.as_str().parse().ok()?,
+            dest_t: c.name("dest_t")?.as_str().parse().ok()?,
+            dest_f: c.name("dest_f")?.as_str().parse().ok()?,
             inspects: 0,
         })
     }
@@ -78,11 +77,11 @@ fn part_a(lines: &str) -> AResult<usize> {
                 item = match m {
                     Monkey {
                         op: '*', operand, ..
-                    } => item * operand.parse().unwrap_or(item),
+                    } => item * operand.unwrap_or(item),
                     Monkey {
                         op: '+', operand, ..
-                    } => item + operand.parse().unwrap_or(item),
-                    _ => panic!("Unknown op {} {}", m.op, m.operand),
+                    } => item + operand.unwrap_or(item),
+                    _ => panic!("Unknown op {} {:?}", m.op, m.operand),
                 };
 
                 // Monkey gets bored
@@ -111,7 +110,7 @@ fn part_a(lines: &str) -> AResult<usize> {
 fn part_b(lines: &str) -> AResult<usize> {
     let mut monkeys = parse(lines)?;
 
-    // Worry levels can be contained within the range 0..common_factor
+    // Worry levels can be contained within the range 0..common_factor-1
     // because we only need to work on the relative offset within this
     // range - not the absolute worry value, and we're only using + and *
     let common_factor = monkeys.iter().map(|m| m.test_div).product();
@@ -127,11 +126,11 @@ fn part_b(lines: &str) -> AResult<usize> {
                 item = match m {
                     Monkey {
                         op: '*', operand, ..
-                    } => item * operand.parse().unwrap_or(item),
+                    } => item * operand.unwrap_or(item),
                     Monkey {
                         op: '+', operand, ..
-                    } => item + operand.parse().unwrap_or(item),
-                    _ => panic!("Unknown op {} {}", m.op, m.operand),
+                    } => item + operand.unwrap_or(item),
+                    _ => panic!("Unknown op {} {:?}", m.op, m.operand),
                 };
 
                 // Apply the worry level control
@@ -224,7 +223,7 @@ Monkey 3:
                 id: 0,
                 items: VecDeque::from_iter(vec![79, 98]),
                 op: '*',
-                operand: "19",
+                operand: Some(19),
                 test_div: 23,
                 dest_t: 2,
                 dest_f: 3,
@@ -237,7 +236,7 @@ Monkey 3:
                 id: 2,
                 items: VecDeque::from_iter(vec![79, 60, 97]),
                 op: '*',
-                operand: "old",
+                operand: None,
                 test_div: 13,
                 dest_t: 1,
                 dest_f: 3,
