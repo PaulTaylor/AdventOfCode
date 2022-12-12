@@ -12,21 +12,21 @@ type AResult<T> = anyhow::Result<T>;
 type Coord = (usize, usize);
 
 #[derive(Debug, Eq, Clone, Copy)]
-struct Adj(u64, Coord);
+struct PathPart(u64, Coord);
 
-impl PartialEq for Adj {
+impl PartialEq for PathPart {
     fn eq(&self, other: &Self) -> bool {
         self.cmp(other) == Ordering::Equal
     }
 }
 
-impl PartialOrd for Adj {
+impl PartialOrd for PathPart {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Ord for Adj {
+impl Ord for PathPart {
     fn cmp(&self, other: &Self) -> Ordering {
         match self.0.cmp(&other.0) {
             Ordering::Equal => self.1.cmp(&other.1),
@@ -70,35 +70,33 @@ fn part_a(lines: &[String]) -> AResult<u64> {
 
     // it's dijkstra time!
     let mut dist: HashMap<Coord, u64> = HashMap::new();
-    let mut Q: BTreeSet<Adj> = BTreeSet::new();
+    let mut Q: BTreeSet<PathPart> = BTreeSet::new();
 
     'outer: for (ri, row) in grid.iter().enumerate() {
         for (ci, _) in row.iter().enumerate() {
             let coords = (ri, ci);
             if grid[ri][ci] == 'S' {
                 dist.insert(coords, 0);
-                Q.insert(Adj(0, coords));
+                Q.insert(PathPart(0, coords));
                 break 'outer;
             }
         }
     }
 
     // Define the function for valid moves
-    let can_move = |old: char, new: char| -> bool {
-        match (old, new) {
-            ('z', _) => true,   // z is the highest - can go anywhere from here (incl E)
-            ('y', 'E') => true, // E is considered to have height z so is a vaild move from y
-            ('S', 'a') => true, // S has height a
-            ('S', 'b') => true, // S has height a
-            ('E', _) => false,  // Cannot leave E once we arrive
-            (o, n) => (n <= ((o as u8) + 1) as char) && n >= 'a',
-        }
+    let can_move = |old: char, new: char| match (old, new) {
+        ('z', _) => true,   // z is the highest - can go anywhere from here (incl E)
+        ('y', 'E') => true, // E is considered to have height z so is a vaild move from y
+        ('S', 'a') => true, // S has height a
+        ('S', 'b') => true, // S has height a
+        ('E', _) => false,  // Cannot leave E once we arrive
+        (o, n) => (n <= ((o as u8) + 1) as char) && n >= 'a',
     };
 
-    while let Some(&u_adj) = Q.iter().next() {
-        Q.remove(&u_adj);
+    while let Some(&u_pp) = Q.iter().next() {
+        Q.remove(&u_pp);
 
-        let Adj(u_dist, u) = u_adj;
+        let PathPart(u_dist, u) = u_pp;
         if grid[u.0][u.1] == 'E' {
             return Ok(u_dist); // reached the target
         }
@@ -109,8 +107,8 @@ fn part_a(lines: &[String]) -> AResult<u64> {
             let v_dist = *dist.get(&v).unwrap_or(&u64::MAX);
             if alt < v_dist {
                 dist.insert(v, alt);
-                Q.remove(&Adj(v_dist, v));
-                Q.insert(Adj(alt, v));
+                Q.remove(&PathPart(v_dist, v));
+                Q.insert(PathPart(alt, v));
             }
         }
     }
@@ -124,35 +122,32 @@ fn part_b(lines: &[String]) -> AResult<u64> {
 
     // it's dijkstra time again only this time in reverse
     let mut dist: HashMap<Coord, u64> = HashMap::new();
-    let mut Q: BTreeSet<Adj> = BTreeSet::new();
+    let mut Q: BTreeSet<PathPart> = BTreeSet::new();
 
     'outer: for (ri, row) in grid.iter().enumerate() {
         for (ci, _) in row.iter().enumerate() {
             let coords = (ri, ci);
             if grid[ri][ci] == 'E' {
                 dist.insert(coords, 0);
-                Q.insert(Adj(0, coords));
+                Q.insert(PathPart(0, coords));
                 break 'outer;
             }
         }
     }
 
     // Define the function for valid moves
-    let can_move = |old: char, new: char| -> bool {
-        // Clone of can_move(...) with part_b's criteria
-        match (old, new) {
-            ('E', 'z') => true,
-            ('E', 'y') => true,
-            ('E', _) => false,
-            ('b', 'S') => true,
-            (n, o) => (n <= ((o as u8) + 1) as char) && n >= 'a',
-        }
+    let can_move = |old: char, new: char| match (old, new) {
+        ('E', 'z') => true,
+        ('E', 'y') => true,
+        ('E', _) => false,
+        ('b', 'S') => true,
+        (n, o) => (n <= ((o as u8) + 1) as char) && n >= 'a',
     };
 
-    while let Some(&u_adj) = Q.iter().next() {
-        Q.remove(&u_adj);
+    while let Some(&u_pp) = Q.iter().next() {
+        Q.remove(&u_pp);
 
-        let Adj(u_dist, u) = u_adj;
+        let PathPart(u_dist, u) = u_pp;
         if grid[u.0][u.1] == 'a' {
             return Ok(u_dist); // reached the target
         }
@@ -163,8 +158,8 @@ fn part_b(lines: &[String]) -> AResult<u64> {
             let v_dist = *dist.get(&v).unwrap_or(&u64::MAX);
             if alt < v_dist {
                 dist.insert(v, alt);
-                Q.remove(&Adj(v_dist, v));
-                Q.insert(Adj(alt, v));
+                Q.remove(&PathPart(v_dist, v));
+                Q.insert(PathPart(alt, v));
             }
         }
     }
