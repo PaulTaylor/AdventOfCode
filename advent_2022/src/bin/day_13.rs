@@ -6,6 +6,7 @@ use nom::{
 use regex::Regex;
 use std::{
     cmp::Ordering,
+    collections::BTreeSet,
     fs::File,
     io::{BufRead, BufReader},
     iter::zip,
@@ -20,6 +21,35 @@ type AResult<T> = anyhow::Result<T>;
 enum Element {
     List(Vec<Element>),
     Num(usize),
+}
+
+impl Ord for Element {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (&self, &other) {
+            (Num(l), Num(r)) => l.cmp(r),
+            (List(l), List(r)) => {
+                // Calculate order of the common child items
+                let common = zip(l, r)
+                    .map(|(l, r)| l.cmp(r))
+                    .find(|&v| v != Ordering::Equal);
+
+                if let Some(x) = common {
+                    x // One of the pairs of children are ordered - return that order
+                } else {
+                    // All of the children are in order - check lengths
+                    l.len().cmp(&r.len())
+                }
+            }
+            (Element::List(_), Num(r)) => self.cmp(&List(vec![Num(*r)])),
+            (Num(l), Element::List(_)) => List(vec![Num(*l)]).cmp(other),
+        }
+    }
+}
+
+impl PartialOrd for Element {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 // Using nom for parsing - define the functions here
@@ -50,33 +80,12 @@ fn parse(lines: &[String]) -> AResult<Vec<(Element, Element)>> {
         .collect())
 }
 
-fn elems_in_order(e1: &Element, e2: &Element) -> Ordering {
-    match (&e1, &e2) {
-        (Num(l), Num(r)) => l.cmp(r),
-        (List(l), List(r)) => {
-            // Calculate order of the common child items
-            let common = zip(l, r)
-                .map(|(l, r)| elems_in_order(l, r))
-                .find(|&v| v != Ordering::Equal);
-
-            if let Some(x) = common {
-                x // One of the pairs of children are ordered - return that order
-            } else {
-                // All of the children are in order - check lengths
-                l.len().cmp(&r.len())
-            }
-        }
-        (Element::List(_), Num(r)) => elems_in_order(e1, &List(vec![Num(*r)])),
-        (Num(l), Element::List(_)) => elems_in_order(&List(vec![Num(*l)]), e2),
-    }
-}
-
 fn part_a(lines: &[String]) -> AResult<usize> {
     let pairs = parse(lines)?;
     let mut acc = 0;
 
     for (idx, (e1, e2)) in pairs.into_iter().enumerate() {
-        if elems_in_order(&e1, &e2) == Ordering::Less {
+        if e1 < e2 {
             acc += idx + 1;
         }
     }
@@ -91,15 +100,12 @@ fn part_b(lines: &[String]) -> AResult<usize> {
     let two = &List(vec![List(vec![Num(2)])]);
     let six = &List(vec![List(vec![Num(6)])]);
 
-    // Create the flattened list of packets
-    let mut flat = vec![two, six];
+    // Create the flattened list of packets (using a sorted set)
+    let mut flat: BTreeSet<_> = BTreeSet::from_iter(vec![two, six]);
     pairs.iter().for_each(|(e1, e2)| {
-        flat.push(e1);
-        flat.push(e2);
+        flat.insert(e1);
+        flat.insert(e2);
     });
-
-    // reuse the earlier function as a comparator
-    flat.sort_by(|a, b| elems_in_order(a, b));
 
     // Locate the dividers
     let i2 = flat.iter().enumerate().find(|(_, v)| *v == &two).unwrap().0 + 1;
