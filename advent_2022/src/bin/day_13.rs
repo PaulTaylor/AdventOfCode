@@ -107,10 +107,9 @@ fn part_b(lines: &[String]) -> AResult<usize> {
 
     // Create the flattened list of packets (using a sorted set)
     let mut flat: BTreeSet<_> = BTreeSet::from_iter(vec![two, six]);
-    pairs.iter().for_each(|(e1, e2)| {
-        flat.insert(e1);
-        flat.insert(e2);
-    });
+    let (a, b): (Vec<_>, Vec<_>) = pairs.into_iter().unzip();
+    flat.extend(a.iter());
+    flat.extend(b.iter());
 
     // Locate the dividers
     let i2 = flat.iter().enumerate().find(|(_, v)| *v == &two).unwrap().0 + 1;
