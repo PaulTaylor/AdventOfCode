@@ -1,7 +1,12 @@
 use humantime::format_duration;
 use nom::{
-    branch::alt, bytes::complete::*, character::complete::*, combinator::*, multi::*,
-    sequence::delimited, IResult,
+    branch::alt,
+    bytes::complete::tag,
+    character::complete::digit1,
+    combinator::map,
+    multi::{fold_many1, separated_list0},
+    sequence::delimited,
+    IResult,
 };
 use regex::Regex;
 use std::{
@@ -17,7 +22,7 @@ use Element::*;
 
 type AResult<T> = anyhow::Result<T>;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq)]
 enum Element {
     List(Vec<Element>),
     Num(usize),
@@ -143,6 +148,30 @@ fn main() -> AResult<()> {
 mod tests {
     use super::*;
 
+    const TEST_INPUT: &str = "[1,1,3,1,1]
+        [1,1,5,1,1]
+
+        [[1],[2,3,4]]
+        [[1],4]
+
+        [9]
+        [[8,7,6]]
+
+        [[4,4],4,4]
+        [[4,4],4,4,4]
+
+        [7,7,7,7]
+        [7,7,7]
+
+        []
+        [3]
+
+        [[[]]]
+        [[]]
+
+        [1,[2,[3,[4,[5,6,7]]]],8,9]
+        [1,[2,[3,[4,[5,6,0]]]],8,9]";
+
     #[test]
     fn test_parse() -> AResult<()> {
         assert_eq!(Num(1), element("1").unwrap().1);
@@ -165,30 +194,6 @@ mod tests {
         );
         Ok(())
     }
-
-    const TEST_INPUT: &str = "[1,1,3,1,1]
-                              [1,1,5,1,1]
-
-                              [[1],[2,3,4]]
-                              [[1],4]
-
-                              [9]
-                              [[8,7,6]]
-
-                              [[4,4],4,4]
-                              [[4,4],4,4,4]
-
-                              [7,7,7,7]
-                              [7,7,7]
-
-                              []
-                              [3]
-
-                              [[[]]]
-                              [[]]
-
-                              [1,[2,[3,[4,[5,6,7]]]],8,9]
-                              [1,[2,[3,[4,[5,6,0]]]],8,9]";
 
     #[test]
     fn test_a() -> AResult<()> {
