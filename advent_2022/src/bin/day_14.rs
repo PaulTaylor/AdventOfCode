@@ -28,7 +28,6 @@ fn parse(lines: &[String]) -> (HashMap<(usize, usize), char>, usize) {
     let mut grid = HashMap::new();
     for segments in rocks {
         for segment in segments.windows(2) {
-            // asssuming x1 <= x2 and y1 <= y2
             let x1 = segment.iter().map(|s| s.0).min().unwrap();
             let x2 = segment.iter().map(|s| s.0).max().unwrap();
             let y1 = segment.iter().map(|s| s.1).min().unwrap();
@@ -134,8 +133,6 @@ fn part_b(lines: &[String]) -> AResult<usize> {
             }
 
             if !moved {
-                // if we've not moved - then this is the final position of this sand
-                // and we can try an put another block of sand in
                 grid.insert((sx, sy), 'o');
                 if SPAWN == (sx, sy) {
                     break 'outer;
