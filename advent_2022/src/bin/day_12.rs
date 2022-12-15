@@ -93,9 +93,7 @@ fn part_a(lines: &[String]) -> AResult<u64> {
         (o, n) => (n <= ((o as u8) + 1) as char) && n >= 'a',
     };
 
-    while let Some(&u_pp) = Q.iter().next() {
-        Q.remove(&u_pp);
-
+    while let Some(u_pp) = Q.pop_first() {
         let PathPart(u_dist, u) = u_pp;
         if grid[u.0][u.1] == 'E' {
             return Ok(u_dist); // reached the target
@@ -144,9 +142,7 @@ fn part_b(lines: &[String]) -> AResult<u64> {
         (n, o) => (n <= ((o as u8) + 1) as char) && n >= 'a',
     };
 
-    while let Some(&u_pp) = Q.iter().next() {
-        Q.remove(&u_pp);
-
+    while let Some(u_pp) = Q.pop_first() {
         let PathPart(u_dist, u) = u_pp;
         if grid[u.0][u.1] == 'a' {
             return Ok(u_dist); // reached the target
