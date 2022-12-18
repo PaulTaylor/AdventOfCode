@@ -80,7 +80,7 @@ fn part_a(lines: &[String]) -> AResult<String> {
 fn part_b(lines: &[String]) -> AResult<String> {
     let (mut state, moves) = parse(lines)?;
     for Move { quantity, from, to } in moves {
-        let split = state[from - 1].len() - quantity as usize;
+        let split = state[from - 1].len() - quantity;
         let temp = state.get_mut(from - 1).unwrap().split_off(split);
         state.get_mut(to - 1).unwrap().extend(temp);
     }
