@@ -11,6 +11,7 @@ lazy_static = "1"
 regex = "1"
 humantime = "2"
 nom = "7"
+fancy-regex = "0"
 
 [profile.release]
 strip = "symbols"
