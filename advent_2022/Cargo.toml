@@ -12,6 +12,7 @@ regex = "1"
 humantime = "2"
 nom = "7"
 fancy-regex = "0"
+rayon = "1"
 
 [profile.release]
 strip = "symbols"
