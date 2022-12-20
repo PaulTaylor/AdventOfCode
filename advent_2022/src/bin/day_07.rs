@@ -50,21 +50,21 @@ fn walk(lines: &[String]) -> HashMap<String, u64> {
     dirs
 }
 
-fn part_a(lines: &[String]) -> AResult<u64> {
+fn part_a(lines: &[String]) -> u64 {
     let mut dirs = walk(lines);
-    dirs.retain(|_, v| *v <= 100000);
-    Ok(dirs.values().sum())
+    dirs.retain(|_, v| *v <= 100_000);
+    dirs.values().sum()
 }
 
-fn part_b(lines: &[String]) -> AResult<u64> {
+fn part_b(lines: &[String]) -> u64 {
     let dirs = walk(lines);
 
-    let free_space = 70000000 - dirs.get("").unwrap();
-    let extra_needed = 30000000 - free_space;
+    let free_space = 70_000_000 - dirs.get("").unwrap();
+    let extra_needed = 30_000_000 - free_space;
 
     let mut dirs: Vec<_> = Vec::from_iter(dirs);
     dirs.sort_by_key(|(_, v)| *v);
-    Ok(dirs.iter().find(|(_, v)| *v >= extra_needed).unwrap().1)
+    dirs.iter().find(|(_, v)| *v >= extra_needed).unwrap().1
 }
 
 fn main() -> AResult<()> {
@@ -75,7 +75,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -83,8 +83,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -121,16 +121,14 @@ mod tests {
     7214296 k";
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice())?, 95437);
-        Ok(())
+        assert_eq!(part_a(lines.as_slice()), 95437);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(lines.as_slice())?, 24933642);
-        Ok(())
+        assert_eq!(part_b(lines.as_slice()), 24_933_642);
     }
 }

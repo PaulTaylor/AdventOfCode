@@ -8,7 +8,7 @@ use std::{
 
 type AResult<T> = anyhow::Result<T>;
 
-fn parse(lines: &[String]) -> AResult<Vec<(i32, i32)>> {
+fn parse(lines: &[String]) -> Vec<(i32, i32)> {
     let f = |x: &str| match x.chars().next().unwrap() {
         'A' | 'X' => 0,
         'B' | 'Y' => 1,
@@ -16,15 +16,15 @@ fn parse(lines: &[String]) -> AResult<Vec<(i32, i32)>> {
         _ => panic!(),
     };
 
-    Ok(lines
+    lines
         .iter()
         .map(|l| -> Vec<&str> { l.split_whitespace().collect() })
         .map(|v| (f(v[0]), f(v[1])))
-        .collect())
+        .collect()
 }
 
-fn part_a(lines: &[String]) -> AResult<i64> {
-    let rounds = parse(lines)?;
+fn part_a(lines: &[String]) -> i64 {
+    let rounds = parse(lines);
 
     let mut acc = 0i32;
     for (a, b) in rounds {
@@ -36,11 +36,11 @@ fn part_a(lines: &[String]) -> AResult<i64> {
         acc += wld + me;
     }
 
-    Ok(acc.into())
+    acc.into()
 }
 
-fn part_b(lines: &[String]) -> AResult<i64> {
-    let rounds = parse(lines)?;
+fn part_b(lines: &[String]) -> i64 {
+    let rounds = parse(lines);
     let mut acc = 0;
 
     for (a, b) in rounds {
@@ -53,7 +53,7 @@ fn part_b(lines: &[String]) -> AResult<i64> {
         acc += res;
     }
 
-    Ok(acc.into())
+    acc.into()
 }
 
 fn main() -> AResult<()> {
@@ -64,7 +64,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -72,8 +72,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -90,16 +90,14 @@ mod tests {
     C Z";
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice())?, 15);
-        Ok(())
+        assert_eq!(part_a(lines.as_slice()), 15);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(lines.as_slice())?, 12);
-        Ok(())
+        assert_eq!(part_b(lines.as_slice()), 12);
     }
 }

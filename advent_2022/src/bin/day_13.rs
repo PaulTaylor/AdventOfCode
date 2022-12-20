@@ -18,7 +18,7 @@ use std::{
     str::FromStr,
     time::Instant,
 };
-use Element::*;
+use Element::{List, Num};
 
 type AResult<T> = anyhow::Result<T>;
 
@@ -78,15 +78,15 @@ fn element(input: &str) -> IResult<&str, Element> {
 
 // End of nom parsing functions
 
-fn parse(lines: &[String]) -> AResult<Vec<(Element, Element)>> {
-    Ok(lines
+fn parse(lines: &[String]) -> Vec<(Element, Element)> {
+    lines
         .chunks(3)
         .map(|chunk| (element(&chunk[0]).unwrap().1, element(&chunk[1]).unwrap().1))
-        .collect())
+        .collect()
 }
 
-fn part_a(lines: &[String]) -> AResult<usize> {
-    let pairs = parse(lines)?;
+fn part_a(lines: &[String]) -> usize {
+    let pairs = parse(lines);
     let mut acc = 0;
 
     for (idx, (e1, e2)) in pairs.into_iter().enumerate() {
@@ -95,11 +95,11 @@ fn part_a(lines: &[String]) -> AResult<usize> {
         }
     }
 
-    Ok(acc)
+    acc
 }
 
-fn part_b(lines: &[String]) -> AResult<usize> {
-    let pairs = parse(lines)?;
+fn part_b(lines: &[String]) -> usize {
+    let pairs = parse(lines);
 
     // Create the specified divider packets
     let two = &List(vec![List(vec![Num(2)])]);
@@ -115,7 +115,7 @@ fn part_b(lines: &[String]) -> AResult<usize> {
     let i2 = flat.iter().enumerate().find(|(_, v)| *v == &two).unwrap().0 + 1;
     let i6 = flat.iter().enumerate().find(|(_, v)| *v == &six).unwrap().0 + 1;
 
-    Ok(i2 * i6)
+    i2 * i6
 }
 
 fn main() -> AResult<()> {
@@ -126,7 +126,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -134,8 +134,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -172,7 +172,7 @@ mod tests {
         [1,[2,[3,[4,[5,6,0]]]],8,9]";
 
     #[test]
-    fn test_parse() -> AResult<()> {
+    fn test_parse() {
         assert_eq!(Num(1), element("1").unwrap().1);
         assert_eq!(List(vec![]), element("[]").unwrap().1);
         assert_eq!(List(vec![Num(1)]), element("[1]").unwrap().1);
@@ -191,20 +191,17 @@ mod tests {
             List(vec![List(vec![]), List(vec![])]),
             element("[[],[]]").unwrap().1
         );
-        Ok(())
     }
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice())?, 13);
-        Ok(())
+        assert_eq!(part_a(lines.as_slice()), 13);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(lines.as_slice())?, 140);
-        Ok(())
+        assert_eq!(part_b(lines.as_slice()), 140);
     }
 }

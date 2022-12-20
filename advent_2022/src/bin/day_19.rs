@@ -58,8 +58,8 @@ struct State {
     geos: usize,
 }
 
-fn parse(lines: &[String]) -> AResult<Vec<Blueprint>> {
-    Ok(lines.iter().map(Blueprint::from).collect())
+fn parse(lines: &[String]) -> Vec<Blueprint> {
+    lines.iter().map(Blueprint::from).collect()
 }
 
 fn evaluate_bp(bp: Blueprint, time_limit: usize) -> usize {
@@ -101,7 +101,7 @@ fn evaluate_bp(bp: Blueprint, time_limit: usize) -> usize {
                     ore: noop.ore - bp.clay_ore_cost,
                     r_clay: noop.r_clay + 1,
                     ..noop
-                })
+                });
             }
             if state.ore >= bp.obs_ore_cost && state.clay >= bp.obs_clay_cost {
                 successors.push(State {
@@ -109,7 +109,7 @@ fn evaluate_bp(bp: Blueprint, time_limit: usize) -> usize {
                     clay: noop.clay - bp.obs_clay_cost,
                     r_obs: noop.r_obs + 1,
                     ..noop
-                })
+                });
             }
             if state.ore >= bp.geo_ore_cost && state.obs >= bp.geo_obs_cost {
                 successors.push(State {
@@ -117,7 +117,7 @@ fn evaluate_bp(bp: Blueprint, time_limit: usize) -> usize {
                     obs: noop.obs - bp.geo_obs_cost,
                     r_geode: noop.r_geode + 1,
                     ..noop
-                })
+                });
             }
 
             successors
@@ -141,18 +141,18 @@ fn evaluate_bp(bp: Blueprint, time_limit: usize) -> usize {
     to_check.iter().map(|s| s.geos).max().unwrap()
 }
 
-fn part_a(lines: &[String]) -> AResult<usize> {
-    Ok(parse(lines)?
+fn part_a(lines: &[String]) -> usize {
+    parse(lines)
         .into_iter()
         .map(|bp| bp.id * evaluate_bp(bp, 24))
-        .sum())
+        .sum()
 }
 
-fn part_b(lines: &[String]) -> AResult<usize> {
-    Ok(parse(&lines[..3])?
+fn part_b(lines: &[String]) -> usize {
+    parse(&lines[..3])
         .into_iter()
         .map(|bp| evaluate_bp(bp, 32))
-        .product())
+        .product()
 }
 
 fn main() -> AResult<()> {
@@ -163,7 +163,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -171,8 +171,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -188,9 +188,9 @@ mod tests {
   Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian.";
 
     #[test]
-    fn test_eval_bp() -> AResult<()> {
+    fn test_eval_bp() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        let plan = parse(&lines[..1])?[0];
+        let plan = parse(&lines[..1])[0];
         assert_eq!(
             plan,
             Blueprint {
@@ -205,21 +205,18 @@ mod tests {
         );
 
         assert_eq!(evaluate_bp(plan, 24), 9);
-        Ok(())
     }
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice())?, 33);
-        Ok(())
+        assert_eq!(part_a(lines.as_slice()), 33);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let mut lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
         lines.push(lines[0].clone());
-        assert_eq!(part_b(lines.as_slice())?, 56 * 62 * 56);
-        Ok(())
+        assert_eq!(part_b(lines.as_slice()), 56 * 62 * 56);
     }
 }

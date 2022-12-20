@@ -18,14 +18,14 @@ struct Monkey {
 }
 
 impl Monkey {
-    fn new(c: Captures) -> Option<Monkey> {
+    fn new(c: &Captures) -> Option<Monkey> {
         Some(Monkey {
             id: c.name("monkey")?.as_str().parse().ok()?,
             items: c
                 .name("items")?
                 .as_str()
                 .split(", ")
-                .flat_map(|s| s.parse())
+                .flat_map(str::parse)
                 .collect(),
             op: c.name("op")?.as_str().chars().next()?,
             operand: c.name("operand")?.as_str().parse().ok(),
@@ -37,7 +37,7 @@ impl Monkey {
     }
 }
 
-fn parse(lines: &str) -> AResult<Vec<Monkey>> {
+fn parse(lines: &str) -> Vec<Monkey> {
     lazy_static! {
         static ref RE: Regex = RegexBuilder::new(
             r##"Monkey (?P<monkey>[0-9]+):
@@ -52,15 +52,14 @@ fn parse(lines: &str) -> AResult<Vec<Monkey>> {
         .unwrap();
     }
 
-    Ok(RE
-        .captures_iter(lines)
-        .map(Monkey::new)
+    RE.captures_iter(lines)
+        .map(|c| Monkey::new(&c))
         .map(Option::unwrap)
-        .collect())
+        .collect()
 }
 
-fn part_a(lines: &str) -> AResult<usize> {
-    let mut monkeys = parse(lines)?;
+fn part_a(lines: &str) -> usize {
+    let mut monkeys = parse(lines);
 
     for _r in 0..20 {
         for i in 0..monkeys.len() {
@@ -103,12 +102,12 @@ fn part_a(lines: &str) -> AResult<usize> {
     }
 
     let mut counts: Vec<_> = monkeys.iter().map(|m| m.inspects).collect();
-    counts.sort();
-    Ok(counts.iter().rev().take(2).product())
+    counts.sort_unstable();
+    counts.iter().rev().take(2).product()
 }
 
-fn part_b(lines: &str) -> AResult<usize> {
-    let mut monkeys = parse(lines)?;
+fn part_b(lines: &str) -> usize {
+    let mut monkeys = parse(lines);
 
     // Worry levels can be contained within the range 0..common_factor-1
     // because we only need to work on the relative offset within this
@@ -152,8 +151,8 @@ fn part_b(lines: &str) -> AResult<usize> {
     }
 
     let mut counts: Vec<_> = monkeys.iter().map(|m| m.inspects).collect();
-    counts.sort();
-    Ok(counts.iter().rev().take(2).product())
+    counts.sort_unstable();
+    counts.iter().rev().take(2).product()
 }
 
 fn main() -> AResult<()> {
@@ -164,7 +163,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = format!("./data/day_{ex}.txt");
@@ -172,8 +171,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(&lines)?);
-    println!("Part B result = {}", part_b(&lines)?);
+    println!("Part A result = {}", part_a(&lines));
+    println!("Part B result = {}", part_b(&lines));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -214,8 +213,8 @@ Monkey 3:
     If false: throw to monkey 1";
 
     #[test]
-    fn test_parse() -> AResult<()> {
-        let monkeys = parse(TEST_INPUT)?;
+    fn test_parse() {
+        let monkeys = parse(TEST_INPUT);
         assert_eq!(monkeys.len(), 4);
         assert_eq!(
             monkeys[0],
@@ -243,18 +242,15 @@ Monkey 3:
                 inspects: 0
             }
         );
-        Ok(())
     }
 
     #[test]
-    fn test_a() -> AResult<()> {
-        assert_eq!(part_a(TEST_INPUT)?, 10605);
-        Ok(())
+    fn test_a() {
+        assert_eq!(part_a(TEST_INPUT), 10605);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
-        assert_eq!(part_b(TEST_INPUT)?, 2713310158);
-        Ok(())
+    fn test_b() {
+        assert_eq!(part_b(TEST_INPUT), 2_713_310_158);
     }
 }

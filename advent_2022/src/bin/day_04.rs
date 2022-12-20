@@ -8,7 +8,7 @@ use std::{
 
 type AResult<T> = anyhow::Result<T>;
 
-fn parse(lines: &[String]) -> AResult<Vec<(u32, u32, u32, u32)>> {
+fn parse(lines: &[String]) -> Vec<(u32, u32, u32, u32)> {
     let mut out: Vec<(u32, u32, u32, u32)> = Vec::with_capacity(lines.len());
     for line in lines {
         let nums: Vec<_> = line
@@ -17,25 +17,25 @@ fn parse(lines: &[String]) -> AResult<Vec<(u32, u32, u32, u32)>> {
             .map(|ll| -> Vec<_> { ll.iter().map(|v| v.parse::<u32>().unwrap()).collect() })
             .collect();
 
-        out.push((nums[0][0], nums[0][1], nums[1][0], nums[1][1]))
+        out.push((nums[0][0], nums[0][1], nums[1][0], nums[1][1]));
     }
 
-    Ok(out)
+    out
 }
 
-fn part_a(lines: &[String]) -> AResult<u32> {
-    let parts = parse(lines)?;
+fn part_a(lines: &[String]) -> u32 {
+    let parts = parse(lines);
     let mut acc = 0u32;
     for (a, b, c, d) in parts {
         if (a <= c && b >= d) | (c <= a && d >= b) {
             acc += 1;
         }
     }
-    Ok(acc)
+    acc
 }
 
-fn part_b(lines: &[String]) -> AResult<u32> {
-    let parts = parse(lines)?;
+fn part_b(lines: &[String]) -> u32 {
+    let parts = parse(lines);
     let mut acc = 0u32;
     for (a, b, c, d) in parts {
         if (a <= c && c <= b && b <= d)  // a c b d
@@ -49,7 +49,7 @@ fn part_b(lines: &[String]) -> AResult<u32> {
         }
     }
 
-    Ok(acc)
+    acc
 }
 
 fn main() -> AResult<()> {
@@ -60,7 +60,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -68,8 +68,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -89,16 +89,14 @@ mod tests {
     2-6,4-8";
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice())?, 2);
-        Ok(())
+        assert_eq!(part_a(lines.as_slice()), 2);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(lines.as_slice())?, 4);
-        Ok(())
+        assert_eq!(part_b(lines.as_slice()), 4);
     }
 }

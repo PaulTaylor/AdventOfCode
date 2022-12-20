@@ -22,8 +22,8 @@ impl Face {
     }
 }
 
-fn parse(lines: &[String]) -> AResult<Vec<Coord>> {
-    Ok(lines
+fn parse(lines: &[String]) -> Vec<Coord> {
+    lines
         .iter()
         .map(|l| {
             l.split(',')
@@ -33,7 +33,7 @@ fn parse(lines: &[String]) -> AResult<Vec<Coord>> {
         // shift all of the coordinates by 1 so we don't have to deal with
         // bounds issues on usizes
         .map(|s| (s[0] + 1, s[1] + 1, s[2] + 1))
-        .collect())
+        .collect()
 }
 
 fn generate_faces(c: Coord) -> [Face; 6] {
@@ -48,17 +48,17 @@ fn generate_faces(c: Coord) -> [Face; 6] {
     ]
 }
 
-fn part_a(lines: &[String]) -> AResult<usize> {
-    let cubes = parse(lines)?;
+fn part_a(lines: &[String]) -> usize {
+    let cubes = parse(lines);
     let mut faces = HashMap::new();
 
-    for c in cubes.iter() {
-        for face in generate_faces(*c) {
+    for c in cubes {
+        for face in generate_faces(c) {
             faces.entry(face).and_modify(|v| *v += 1).or_insert(0);
         }
     }
 
-    Ok(faces.len() - faces.values().filter(|&&v| v > 0).count())
+    faces.len() - faces.values().filter(|&&v| v > 0).count()
 }
 
 fn is_outside(
@@ -132,7 +132,7 @@ fn is_outside(
             || (!history.contains(&(cx, cy, cz - 1))
                 && is_outside((cx, cy, cz - 1), max, cubes, external_blocks, history))
             || (!history.contains(&(cx, cy, cz + 1))
-                && is_outside((cx, cy, cz + 1), max, cubes, external_blocks, history))
+                && is_outside((cx, cy, cz + 1), max, cubes, external_blocks, history));
     }
 
     if outside {
@@ -142,9 +142,9 @@ fn is_outside(
     outside
 }
 
-fn part_b(lines: &[String]) -> AResult<usize> {
-    let mut cubes = parse(lines)?;
-    cubes.sort();
+fn part_b(lines: &[String]) -> usize {
+    let mut cubes = parse(lines);
+    cubes.sort_unstable();
     let cubes = &cubes;
 
     let mut external_faces = 0;
@@ -159,51 +159,51 @@ fn part_b(lines: &[String]) -> AResult<usize> {
     // another cube then it's external
     for &(x, y, z) in cubes {
         // Left face
-        external_faces += is_outside(
+        external_faces += usize::from(is_outside(
             (x - 1, y, z),
             max,
             cubes,
             &mut external_blocks,
             &mut HashSet::new(),
-        ) as usize;
-        external_faces += is_outside(
+        ));
+        external_faces += usize::from(is_outside(
             (x + 1, y, z),
             max,
             cubes,
             &mut external_blocks,
             &mut HashSet::new(),
-        ) as usize;
-        external_faces += is_outside(
+        ));
+        external_faces += usize::from(is_outside(
             (x, y - 1, z),
             max,
             cubes,
             &mut external_blocks,
             &mut HashSet::new(),
-        ) as usize;
-        external_faces += is_outside(
+        ));
+        external_faces += usize::from(is_outside(
             (x, y + 1, z),
             max,
             cubes,
             &mut external_blocks,
             &mut HashSet::new(),
-        ) as usize;
-        external_faces += is_outside(
+        ));
+        external_faces += usize::from(is_outside(
             (x, y, z - 1),
             max,
             cubes,
             &mut external_blocks,
             &mut HashSet::new(),
-        ) as usize;
-        external_faces += is_outside(
+        ));
+        external_faces += usize::from(is_outside(
             (x, y, z + 1),
             max,
             cubes,
             &mut external_blocks,
             &mut HashSet::new(),
-        ) as usize;
+        ));
     }
 
-    Ok(external_faces)
+    external_faces
 }
 
 fn main() -> AResult<()> {
@@ -214,7 +214,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -222,8 +222,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -250,28 +250,26 @@ mod tests {
     2,3,5";
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(&lines[..2])?, 10);
-        assert_eq!(part_a(lines.as_slice())?, 64);
-        Ok(())
+        assert_eq!(part_a(&lines[..2]), 10);
+        assert_eq!(part_a(lines.as_slice()), 64);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(&lines[..1])?, 6);
+        assert_eq!(part_b(&lines[..1]), 6);
         assert_eq!(
-            part_b(&lines[..2])?,
+            part_b(&lines[..2]),
             10,
             "pair has no void - so all non-adj faces are external"
         );
         assert_eq!(
-            part_b(&lines[..3])?,
+            part_b(&lines[..3]),
             14,
             "pair has no void - so all non-adj faces are external"
         );
-        assert_eq!(part_b(lines.as_slice())?, 58);
-        Ok(())
+        assert_eq!(part_b(lines.as_slice()), 58);
     }
 }

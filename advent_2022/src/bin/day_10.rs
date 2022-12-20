@@ -14,22 +14,22 @@ enum Instruction {
     Addx(i32),
 }
 
-use Instruction::*;
+use Instruction::{Addx, Noop};
 
-fn parse(lines: &[String]) -> AResult<Vec<Instruction>> {
-    Ok(lines
+fn parse(lines: &[String]) -> Vec<Instruction> {
+    lines
         .iter()
         .map(|l| l.split_whitespace().collect::<Vec<_>>())
         .map(|x| match x.as_slice() {
             ["noop"] => Instruction::Noop,
             ["addx", ns] => Instruction::Addx(ns.parse().unwrap()),
-            _ => panic!("unknown instruction {:?}", x),
+            _ => panic!("unknown instruction {x:?}"),
         })
-        .collect())
+        .collect()
 }
 
-fn part_a(lines: &[String]) -> AResult<i32> {
-    let instructions = parse(lines)?;
+fn part_a(lines: &[String]) -> i32 {
+    let instructions = parse(lines);
     let mut it = instructions.iter();
     let mut acc = 0;
     let mut clk = 0;
@@ -65,15 +65,15 @@ fn part_a(lines: &[String]) -> AResult<i32> {
         x += q.pop_front().unwrap();
     }
 
-    Ok(acc)
+    acc
 }
 
-fn part_b(lines: &[String]) -> AResult<String> {
-    let instructions = parse(lines)?;
+fn part_b(lines: &[String]) -> String {
+    let instructions = parse(lines);
     let mut it = instructions.iter();
     let mut clk: usize = 0;
-    let mut q: VecDeque<i32> = VecDeque::new();
-    let mut x: i32 = 1;
+    let mut q: VecDeque<isize> = VecDeque::new();
+    let mut x: isize = 1;
     let mut crt = [[' '; 40]; 6];
 
     loop {
@@ -88,7 +88,7 @@ fn part_b(lines: &[String]) -> AResult<String> {
                 }
                 Some(Addx(v)) => {
                     q.push_back(0);
-                    q.push_back(*v);
+                    q.push_back((*v).try_into().unwrap());
                 }
             }
         }
@@ -96,7 +96,7 @@ fn part_b(lines: &[String]) -> AResult<String> {
         // Update CRT
         let crt_row = clk / 40;
         let crt_col = clk.rem_euclid(40);
-        if (x - 1..=x + 1).contains(&(crt_col as i32)) {
+        if (x - 1..=x + 1).contains(&(crt_col.try_into().unwrap())) {
             // Sprite is overlapping the crt position - mark the crt
             crt[crt_row][crt_col] = '#';
         }
@@ -108,7 +108,7 @@ fn part_b(lines: &[String]) -> AResult<String> {
     let mut lines: Vec<String> = crt.iter().map(|r| r.iter().collect()).collect();
     lines.insert(0, "\n=======================================".to_string());
     lines.push("=======================================".to_string());
-    Ok(lines.join("\n"))
+    lines.join("\n")
 }
 
 fn main() -> AResult<()> {
@@ -119,7 +119,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -127,8 +127,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -288,16 +288,15 @@ mod tests {
     noop";
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice())?, 13140);
-        Ok(())
+        assert_eq!(part_a(lines.as_slice()), 13140);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        let out_lines = part_b(lines.as_slice())?;
+        let out_lines = part_b(lines.as_slice());
         assert!(out_lines.contains(
             "##  ##  ##  ##  ##  ##  ##  ##  ##  ##  
 ###   ###   ###   ###   ###   ###   ### 
@@ -306,6 +305,5 @@ mod tests {
 ######      ######      ######      ####
 #######       #######       #######     "
         ));
-        Ok(())
     }
 }

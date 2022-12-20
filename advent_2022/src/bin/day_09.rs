@@ -9,20 +9,20 @@ use std::{
 
 type AResult<T> = anyhow::Result<T>;
 
-fn parse(lines: &[String]) -> AResult<Vec<(char, i32)>> {
-    Ok(lines
+fn parse(lines: &[String]) -> Vec<(char, i32)> {
+    lines
         .iter()
         .map(|l| l.split_whitespace().collect::<Vec<_>>())
         .map(|l| (l[0].chars().next().unwrap(), l[1].parse().unwrap()))
-        .collect())
+        .collect()
 }
 
 fn calculate_diff(h: (i32, i32), t: (i32, i32)) -> (i32, i32) {
     (h.0 - t.0, h.1 - t.1)
 }
 
-fn solve(lines: &[String], knots: usize) -> AResult<usize> {
-    let instr = parse(lines)?;
+fn solve(lines: &[String], knots: usize) -> usize {
+    let instr = parse(lines);
     let mut positions: Vec<_> = (0..knots).map(|_| (0, 0)).collect();
     let mut t_visited: HashSet<(i32, i32)> = HashSet::from_iter([(0, 0)]);
 
@@ -54,14 +54,14 @@ fn solve(lines: &[String], knots: usize) -> AResult<usize> {
             }
         }
     }
-    Ok(t_visited.len())
+    t_visited.len()
 }
 
-fn part_a(lines: &[String]) -> AResult<usize> {
+fn part_a(lines: &[String]) -> usize {
     solve(lines, 2)
 }
 
-fn part_b(lines: &[String]) -> AResult<usize> {
+fn part_b(lines: &[String]) -> usize {
     solve(lines, 10)
 }
 
@@ -73,7 +73,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -81,8 +81,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -113,26 +113,23 @@ mod tests {
                                U 20";
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice())?, 13);
-        Ok(())
+        assert_eq!(part_a(lines.as_slice()), 13);
     }
 
     #[test]
-    fn test_solve() -> AResult<()> {
+    fn test_solve() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(solve(lines.as_slice(), 2)?, 13);
-        Ok(())
+        assert_eq!(solve(lines.as_slice(), 2), 13);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(lines.as_slice())?, 1);
+        assert_eq!(part_b(lines.as_slice()), 1);
 
         let lines: Vec<_> = TEST_LONGER.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(lines.as_slice())?, 36);
-        Ok(())
+        assert_eq!(part_b(lines.as_slice()), 36);
     }
 }

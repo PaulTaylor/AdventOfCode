@@ -55,20 +55,20 @@ fn _display(grid: &HashMap<(usize, usize), char>) {
 
     println!("=========================");
     for y in min_y..=max_y {
-        print!("{:02}  ", y);
+        print!("{y:02}  ");
         for x in min_x..=max_x {
             match grid.get(&(x, y)) {
-                Some(c) => print!("{}", c),
+                Some(c) => print!("{c}"),
                 None if (x, y) == SPAWN => print!("+"),
                 None => print!(" "),
             }
         }
-        println!()
+        println!();
     }
     println!("=========================");
 }
 
-fn part_a(lines: &[String]) -> AResult<usize> {
+fn part_a(lines: &[String]) -> usize {
     let (mut grid, floor) = parse(lines);
     let starting_len = grid.len();
 
@@ -105,10 +105,10 @@ fn part_a(lines: &[String]) -> AResult<usize> {
         }
     }
 
-    Ok(grid.len() - starting_len)
+    grid.len() - starting_len
 }
 
-fn part_b(lines: &[String]) -> AResult<usize> {
+fn part_b(lines: &[String]) -> usize {
     let (mut grid, max_y) = parse(lines);
     let floor = max_y + 1;
     let starting_len = grid.len();
@@ -136,14 +136,13 @@ fn part_b(lines: &[String]) -> AResult<usize> {
                 grid.insert((sx, sy), 'o');
                 if SPAWN == (sx, sy) {
                     break 'outer;
-                } else {
-                    break;
                 }
+                break;
             }
         }
     }
 
-    Ok(grid.len() - starting_len)
+    grid.len() - starting_len
 }
 
 fn main() -> AResult<()> {
@@ -154,7 +153,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -162,8 +161,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -179,16 +178,14 @@ mod tests {
     503,4 -> 502,4 -> 502,9 -> 494,9";
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice())?, 24);
-        Ok(())
+        assert_eq!(part_a(lines.as_slice()), 24);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(lines.as_slice())?, 93);
-        Ok(())
+        assert_eq!(part_b(lines.as_slice()), 93);
     }
 }

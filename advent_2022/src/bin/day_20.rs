@@ -24,18 +24,19 @@ fn mix(nums: &mut Vec<(usize, isize)>) {
             .unwrap();
         nums.remove(current_index);
 
-        let mut new_index = current_index as isize + v;
+        let mut new_index: isize = current_index.try_into().unwrap();
+        new_index += v;
 
         // Wrap around indexes
-        new_index = new_index.rem_euclid(nums.len() as isize);
+        new_index = new_index.rem_euclid(nums.len().try_into().unwrap());
 
         // In the example text index 0 is displayed at the END of the text
         // but it still counts as position 0 (as len mod len = 0);
-        nums.insert(new_index as usize, (original_index, v));
+        nums.insert(new_index.try_into().unwrap(), (original_index, v));
     }
 }
 
-fn part_a(lines: &[String]) -> AResult<isize> {
+fn part_a(lines: &[String]) -> isize {
     // Record each number with it's original index - so we can deal with duplicates
     let mut nums: Vec<(usize, isize)> = lines
         .iter()
@@ -57,15 +58,15 @@ fn part_a(lines: &[String]) -> AResult<isize> {
         nums[(zero_pos + 3000) % nums.len()].1,
     ];
 
-    Ok(elems.iter().sum())
+    elems.iter().sum()
 }
 
-fn part_b(lines: &[String]) -> AResult<isize> {
+fn part_b(lines: &[String]) -> isize {
     // Record each number with it's original index - so we can deal with duplicates
     let mut nums: Vec<(usize, isize)> = lines
         .iter()
         .map(|x| x.parse().unwrap())
-        .map(|x: isize| x * 811589153) // apply the "key"
+        .map(|x: isize| x * 811_589_153) // apply the "key"
         .enumerate()
         .collect();
 
@@ -84,7 +85,7 @@ fn part_b(lines: &[String]) -> AResult<isize> {
         nums[(zero_pos + 3000) % nums.len()].1,
     ];
 
-    Ok(elems.iter().sum())
+    elems.iter().sum()
 }
 
 fn main() -> AResult<()> {
@@ -95,7 +96,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -103,8 +104,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -125,16 +126,14 @@ mod tests {
     4";
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice())?, 3);
-        Ok(())
+        assert_eq!(part_a(lines.as_slice()), 3);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(lines.as_slice())?, 1623178306);
-        Ok(())
+        assert_eq!(part_b(lines.as_slice()), 1_623_178_306);
     }
 }

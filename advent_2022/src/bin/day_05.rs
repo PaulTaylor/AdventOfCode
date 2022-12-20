@@ -44,12 +44,12 @@ fn parse(lines: &[String]) -> AResult<(State, Vec<Move>)> {
         let chars: Vec<char> = line.chars().collect();
         for col in crane_positions.clone() {
             let crane = col / 4;
-            match chars[col] {
-                'A'..='Z' => {
+            match chars.get(col) {
+                Some('A'..='Z') => {
                     let l = state.get_mut(crane).unwrap();
                     l.insert(0, chars[col]);
                 }
-                '1'..='9' | ' ' => { /* ignore patterns */ }
+                Some('1'..='9' | ' ') => { /* ignore patterns */ }
                 _ => panic!(),
             };
         }
@@ -61,7 +61,7 @@ fn parse(lines: &[String]) -> AResult<(State, Vec<Move>)> {
 fn _display(state: &State) {
     println!("==============================================");
     for (i, stack) in state.iter().enumerate() {
-        println!("{}: {}", i + 1, stack.iter().collect::<String>())
+        println!("{}: {}", i + 1, stack.iter().collect::<String>());
     }
 }
 
@@ -96,7 +96,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
