@@ -15,7 +15,7 @@ fn parse(lines: &[String]) -> AResult<Vec<u64>> {
         match line.len() {
             0 => {
                 o.push(this_elf);
-                this_elf = 0
+                this_elf = 0;
             }
             _ => {
                 this_elf += line.parse::<u64>()?;
@@ -33,7 +33,7 @@ fn part_a(lines: &[String]) -> AResult<u64> {
 
 fn part_b(lines: &[String]) -> AResult<u64> {
     let mut elves = parse(lines)?;
-    elves.sort();
+    elves.sort_unstable();
     Ok(elves.iter().rev().take(3).sum())
 }
 
@@ -45,7 +45,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;

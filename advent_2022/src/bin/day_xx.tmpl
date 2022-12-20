@@ -8,15 +8,15 @@ use std::{
 
 type AResult<T> = anyhow::Result<T>;
 
-fn parse(lines: &[String]) -> AResult<Vec<Vec<char>>> {
+fn parse(lines: &[String]) -> Vec<Vec<char>> {
     panic!("Not implemented");
 }
 
-fn part_a(lines: &[String]) -> AResult<u64> {
+fn part_a(lines: &[String]) -> usize {
     panic!("Not implemented");
 }
 
-fn part_b(lines: &[String]) -> AResult<u64> {
+fn part_b(lines: &[String]) -> usize {
     panic!("Not implemented");
 }
 
@@ -28,7 +28,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -36,8 +36,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -54,18 +54,15 @@ mod tests {
     string";
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        panic!("Add assert value");
-        assert_eq!(part_a(lines.as_slice())?, -1);
-        Ok(())
+        assert_eq!(part_a(lines.as_slice()), 0);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
         panic!("Add assert value");
         // assert_eq!(part_b(lines.as_slice())?, -1);
-        // Ok(())
     }
 }

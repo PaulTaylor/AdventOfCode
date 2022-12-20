@@ -35,8 +35,8 @@ impl Ord for PathPart {
     }
 }
 
-fn parse(lines: &[String]) -> AResult<Vec<Vec<char>>> {
-    Ok(lines.iter().map(|l| l.chars().collect()).collect())
+fn parse(lines: &[String]) -> Vec<Vec<char>> {
+    lines.iter().map(|l| l.chars().collect()).collect()
 }
 
 fn find_neighbours<F: Fn(char, char) -> bool>(
@@ -49,13 +49,13 @@ fn find_neighbours<F: Fn(char, char) -> bool>(
     let c = grid[ri][ci];
 
     if ri > 0 && can_move(c, grid[ri - 1][ci]) {
-        neighbours.push((ri - 1, ci))
+        neighbours.push((ri - 1, ci));
     }
     if ri < grid.len() - 1 && can_move(c, grid[ri + 1][ci]) {
-        neighbours.push((ri + 1, ci))
+        neighbours.push((ri + 1, ci));
     }
     if ci > 0 && can_move(c, grid[ri][ci - 1]) {
-        neighbours.push((ri, ci - 1))
+        neighbours.push((ri, ci - 1));
     }
     if ci < grid[0].len() - 1 && can_move(c, grid[ri][ci + 1]) {
         neighbours.push((ri, ci + 1));
@@ -66,7 +66,7 @@ fn find_neighbours<F: Fn(char, char) -> bool>(
 
 #[allow(non_snake_case)]
 fn part_a(lines: &[String]) -> AResult<u64> {
-    let grid = parse(lines)?;
+    let grid = parse(lines);
 
     // it's dijkstra time!
     let mut dist: HashMap<Coord, u64> = HashMap::new();
@@ -85,11 +85,13 @@ fn part_a(lines: &[String]) -> AResult<u64> {
 
     // Define the function for valid moves
     let can_move = |old: char, new: char| match (old, new) {
-        ('z', _) => true,   // z is the highest - can go anywhere from here (incl E)
-        ('y', 'E') => true, // E is considered to have height z so is a vaild move from y
-        ('S', 'a') => true, // S has height a
-        ('S', 'b') => true, // S has height a
-        ('E', _) => false,  // Cannot leave E once we arrive
+        // z is the highest - can go anywhere from here (incl E)
+        // E is considered to have height z so is a vaild move from y
+        // S has height a or b
+        ('z', _) | ('y', 'E') | ('S', 'a' | 'b') => true,
+        // Cannot leave E once we arrive
+        ('E', _) => false,
+        // The rest
         (o, n) => (n <= ((o as u8) + 1) as char) && n >= 'a',
     };
 
@@ -116,7 +118,7 @@ fn part_a(lines: &[String]) -> AResult<u64> {
 
 #[allow(non_snake_case)]
 fn part_b(lines: &[String]) -> AResult<u64> {
-    let grid = parse(lines)?;
+    let grid = parse(lines);
 
     // it's dijkstra time again only this time in reverse
     let mut dist: HashMap<Coord, u64> = HashMap::new();
@@ -135,10 +137,8 @@ fn part_b(lines: &[String]) -> AResult<u64> {
 
     // Define the function for valid moves
     let can_move = |old: char, new: char| match (old, new) {
-        ('E', 'z') => true,
-        ('E', 'y') => true,
+        ('E', 'z' | 'y') | ('b', 'S') => true,
         ('E', _) => false,
-        ('b', 'S') => true,
         (n, o) => (n <= ((o as u8) + 1) as char) && n >= 'a',
     };
 
@@ -171,7 +171,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;

@@ -7,7 +7,7 @@ use std::{
     io::{BufRead, BufReader},
     time::Instant,
 };
-use Shape::*;
+use Shape::{Cross, HLine, RevL, Square, VLine};
 
 type AResult<T> = anyhow::Result<T>;
 
@@ -79,7 +79,7 @@ fn detect_cycle(heights: &str) -> Option<(usize, String)> {
     None // Didn't find a cycle
 }
 
-fn solve(lines: &[String], target: usize) -> AResult<usize> {
+fn solve(lines: &[String], target: usize) -> usize {
     let period = 5 * lines[0].chars().count();
     let mut board: HashMap<(usize, usize), char> = HashMap::new();
     let mut feed = [HLine, Cross, RevL, VLine, Square].iter().cycle();
@@ -123,7 +123,7 @@ fn solve(lines: &[String], target: usize) -> AResult<usize> {
                             highest_y = max(highest_y, y);
                         }
                         heights.push_str(&format!("{}", highest_y - orig));
-                        state = None
+                        state = None;
                     }
                 }
                 Action::Push => {
@@ -175,7 +175,7 @@ fn solve(lines: &[String], target: usize) -> AResult<usize> {
             .map(|c| (c as u8 - 48) as usize)
             .sum();
 
-        Ok(result + rem_sum)
+        result + rem_sum
     } else {
         panic!("No solution found :-(");
     }
@@ -189,7 +189,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -197,10 +197,10 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", solve(lines.as_slice(), 2022)?);
+    println!("Part A result = {}", solve(lines.as_slice(), 2022));
     println!(
         "Part B result = {}",
-        solve(lines.as_slice(), 1000000000000)?
+        solve(lines.as_slice(), 1_000_000_000_000)
     );
     let end = Instant::now();
 
@@ -216,7 +216,7 @@ mod tests {
     const TEST_INPUT: &str = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>";
 
     #[test]
-    fn test_detect_cycle() -> AResult<()> {
+    fn test_detect_cycle() {
         // Some example data generated from sim runs of the test scenario
         let heights = [
             1, 3, 2, 1, 2, 1, 3, 2, 2, 0, 1, 3, 2, 0, 2, 1, 3, 3, 4, 0, 1, 2, 3, 0, 1, 1, 3, 2, 2,
@@ -233,27 +233,27 @@ mod tests {
             0, 1, 2, 1,
         ];
 
-        let heights: String = heights.iter().map(|x| format!("{}", x)).collect();
+        let heights: String = heights.iter().map(|x| format!("{x}")).collect();
         if let Some((offset, cycle)) = detect_cycle(&heights) {
             assert_eq!(offset, 15);
             assert_eq!(cycle, "13340123011322002340121201212013200".to_string());
         } else {
-            panic!("failed to compute cycles")
+            panic!("failed to compute cycles");
         }
-        Ok(())
     }
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(solve(lines.as_slice(), 2022)?, 3068);
-        Ok(())
+        assert_eq!(solve(lines.as_slice(), 2022), 3068);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(solve(lines.as_slice(), 1000000000000)?, 1514285714288);
-        Ok(())
+        assert_eq!(
+            solve(lines.as_slice(), 1_000_000_000_000),
+            1_514_285_714_288
+        );
     }
 }

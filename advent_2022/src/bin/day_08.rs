@@ -8,15 +8,15 @@ use std::{
 
 type AResult<T> = anyhow::Result<T>;
 
-fn parse(lines: &[String]) -> AResult<Vec<Vec<usize>>> {
-    Ok(lines
+fn parse(lines: &[String]) -> Vec<Vec<usize>> {
+    lines
         .iter()
         .map(|l| l.chars().map(|c| (c as usize) - ('0' as usize)).collect())
-        .collect())
+        .collect()
 }
 
-fn part_a(lines: &[String]) -> AResult<usize> {
-    let grid = parse(lines)?;
+fn part_a(lines: &[String]) -> usize {
+    let grid = parse(lines);
 
     // Perimiter trees are always visible
     let mut visible = (lines.len() * 2) + ((lines[0].len() - 2) * 2);
@@ -53,7 +53,7 @@ fn part_a(lines: &[String]) -> AResult<usize> {
         }
     }
 
-    Ok(visible)
+    visible
 }
 
 fn scenic_score(grid: &[Vec<usize>], ri: usize, ci: usize) -> usize {
@@ -103,8 +103,8 @@ fn scenic_score(grid: &[Vec<usize>], ri: usize, ci: usize) -> usize {
     left_score * right_score * up_score * down_score
 }
 
-fn part_b(lines: &[String]) -> AResult<usize> {
-    let grid = parse(lines)?;
+fn part_b(lines: &[String]) -> usize {
+    let grid = parse(lines);
     let mut scores = Vec::with_capacity(grid.len() * grid[0].len());
 
     for (ri, row) in grid.iter().enumerate() {
@@ -113,7 +113,7 @@ fn part_b(lines: &[String]) -> AResult<usize> {
         }
     }
 
-    Ok(*scores.iter().max().unwrap())
+    *scores.iter().max().unwrap()
 }
 
 fn main() -> AResult<()> {
@@ -124,7 +124,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -132,8 +132,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -152,25 +152,22 @@ mod tests {
     35390";
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice())?, 21);
-        Ok(())
+        assert_eq!(part_a(lines.as_slice()), 21);
     }
 
     #[test]
-    fn test_scenic_score() -> AResult<()> {
+    fn test_scenic_score() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        let grid = parse(&lines)?;
+        let grid = parse(&lines);
         assert_eq!(scenic_score(&grid, 1, 2), 4);
         assert_eq!(scenic_score(&grid, 3, 2), 8);
-        Ok(())
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(lines.as_slice())?, 8);
-        Ok(())
+        assert_eq!(part_b(lines.as_slice()), 8);
     }
 }

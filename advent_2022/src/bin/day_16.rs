@@ -12,23 +12,23 @@ type AResult<T> = anyhow::Result<T>;
 #[derive(Debug)]
 struct Valve {
     id: String,
-    rate: u32,
+    rate: usize,
     tunnels: Vec<String>,
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-struct Path(u32, u32, Vec<String>);
+struct Path(usize, usize, Vec<String>);
 
 #[derive(Debug)]
 struct Distances<'a> {
-    dist: HashMap<(&'a String, &'a String), u32>,
+    dist: HashMap<(&'a String, &'a String), usize>,
     next: HashMap<(&'a String, &'a String), &'a String>,
 }
 
 impl<'a> Distances<'a> {
     fn new(valves: &'a HashMap<String, Valve>) -> Self {
-        let mut dist: HashMap<(&String, &String), u32> = HashMap::new();
-        let mut next: HashMap<(&String, &String), &String> = HashMap::new();
+        let mut dist = HashMap::new();
+        let mut next = HashMap::new();
 
         for u in valves.values() {
             for v in &u.tunnels {
@@ -45,7 +45,7 @@ impl<'a> Distances<'a> {
                 for j in valves.keys() {
                     let o_dik = dist.get(&(i, k));
                     let o_dkj = dist.get(&(k, j));
-                    let dij = dist.get(&(i, j)).unwrap_or(&u32::MAX);
+                    let dij = dist.get(&(i, j)).unwrap_or(&usize::MAX);
 
                     if let (Some(dik), Some(dkj)) = (o_dik, o_dkj) {
                         let alt = dik + dkj;
@@ -69,7 +69,7 @@ impl<'a> Distances<'a> {
             r.push(next);
         }
         r.remove(0); // remove the start otherwise it'll be duplicated
-        r.push(format!("{}_O", dest)); // Open the valve when we get to it
+        r.push(format!("{dest}_O")); // Open the valve when we get to it
         r
     }
 }
@@ -83,7 +83,7 @@ fn parse(lines: &[String]) -> AResult<HashMap<String, Valve>> {
         .map(|l| {
             let c = pattern
                 .captures(l)
-                .unwrap_or_else(|| panic!("regex does not match - {}", l));
+                .unwrap_or_else(|| panic!("regex does not match - {l}"));
             let id = c.get(1).unwrap().as_str().to_string();
             let v = Valve {
                 id: id.clone(),
@@ -101,12 +101,12 @@ fn parse(lines: &[String]) -> AResult<HashMap<String, Valve>> {
         .collect())
 }
 
-fn bounds(path: &[String], valves: &HashMap<String, Valve>) -> (u32, u32) {
+fn bounds(path: &[String], valves: &HashMap<String, Valve>) -> (usize, usize) {
     let current = {
         let mut acc = 0;
         for (t, a) in path.iter().enumerate() {
             if a.ends_with("_O") {
-                let rem_time = 30 - t as u32;
+                let rem_time = 30 - t;
                 acc += rem_time * valves[&a[0..2]].rate;
             }
         }
@@ -121,7 +121,7 @@ fn bounds(path: &[String], valves: &HashMap<String, Valve>) -> (u32, u32) {
     // Upper bound is if all valves were instantly activtated - not possible in
     // the actual scenario but it is easy to calculate
     let remaining = {
-        let remaining_mins = 31 - path.len() as u32;
+        let remaining_mins: usize = 31 - path.len();
         let all: HashSet<_> = valves.keys().filter(|&v| valves[v].rate > 0).collect();
         let open_valves: Vec<_> = path[1..]
             .iter()
@@ -133,10 +133,10 @@ fn bounds(path: &[String], valves: &HashMap<String, Valve>) -> (u32, u32) {
         let mut unopened_valves: Vec<_> = all.difference(&path_set).collect();
         unopened_valves.sort_by_key(|&&v| valves[v].rate);
 
-        let tot: u32 = unopened_valves
+        let tot: usize = unopened_valves
             .iter()
             .map(|&&v| valves[v].rate)
-            .take(remaining_mins as usize)
+            .take(remaining_mins)
             .sum();
 
         tot * remaining_mins
@@ -145,7 +145,8 @@ fn bounds(path: &[String], valves: &HashMap<String, Valve>) -> (u32, u32) {
     (current, current + remaining)
 }
 
-fn part_a(lines: &[String]) -> AResult<u32> {
+#[allow(clippy::similar_names)]
+fn part_a(lines: &[String]) -> AResult<usize> {
     let valves = parse(lines)?;
     let all_valves: HashSet<String> = valves
         .iter()
@@ -173,16 +174,17 @@ fn part_a(lines: &[String]) -> AResult<u32> {
             return Ok(ub);
         }
 
-        let open_valves = HashSet::from_iter(
-            path.iter()
-                .filter_map(|x| x.strip_suffix("_O"))
-                .map(|x| x.to_string()),
-        );
+        let open_valves: HashSet<String> = path
+            .iter()
+            .filter_map(|x| x.strip_suffix("_O"))
+            .map(str::to_string)
+            .collect();
+
         let unopened_valves: Vec<_> = all_valves.difference(&open_valves).collect();
 
         for n in unopened_valves {
             let n = n.clone();
-            let mut new_path = Vec::from_iter(path.iter().cloned());
+            let mut new_path: Vec<_> = path.clone();
             new_path.extend(distances.route(path.last().unwrap().clone(), &n));
 
             // calculate new bounds for new path
@@ -196,13 +198,13 @@ fn part_a(lines: &[String]) -> AResult<u32> {
 
         // Remove elements from the queue if the upper bound is < the the original
         // lb for this potential solution
-        queue.retain(|x| x.0 >= lb)
+        queue.retain(|x| x.0 >= lb);
     }
 
     Err(anyhow::format_err!("Solution is not found"))
 }
 
-fn part_b(lines: &[String]) -> AResult<u32> {
+fn part_b(lines: &[String]) -> AResult<usize> {
     let valves = parse(lines)?;
     let all_valves: HashSet<String> = valves
         .iter()
@@ -228,14 +230,14 @@ fn part_b(lines: &[String]) -> AResult<u32> {
 
         let visited = &path
             .iter()
-            .filter_map(|x| x.strip_suffix("_O").map(|s| s.to_string()))
+            .filter_map(|x| x.strip_suffix("_O").map(str::to_string))
             .collect();
 
         let unopened = all_valves.difference(visited);
 
         for next in unopened {
             let dist = distances.dist[&(&loc, next)];
-            if path.len() as u32 + dist < 26 {
+            if path.len() + dist < 26 {
                 let route = distances.route(loc.clone(), next);
                 queue.push(path.iter().cloned().chain(route.iter().cloned()).collect());
             }
@@ -247,24 +249,24 @@ fn part_b(lines: &[String]) -> AResult<u32> {
     }
 
     // Now, push the paths into a BTreeSet that orders them by pressure
-    let path_score = |p: &Vec<String>| -> u32 {
-        let mut acc: u32 = 0;
+    let path_score = |p: &Vec<String>| -> isize {
+        let mut acc: usize = 0;
         for (t, a) in p.iter().enumerate() {
             if a.ends_with("_O") {
-                let rem_time = 25 - t as u32;
+                let rem_time = 25 - t;
                 acc += rem_time * valves[&a[0..2]].rate;
             }
         }
-        acc
+        acc.try_into().unwrap()
     };
 
-    paths.sort_by_cached_key(|p| -(path_score(p) as i32));
+    paths.sort_by_cached_key(|p| -(path_score(p)));
 
     let mut acc = 0;
-    let max_path_score: u32 = path_score(&paths[0]);
+    let max_path_score = path_score(&paths[0]);
 
     for i in 0..paths.len() {
-        let best = BTreeSet::from_iter(paths[i].iter().filter(|x| x.ends_with("_O")));
+        let best: BTreeSet<_> = paths[i].iter().filter(|x| x.ends_with("_O")).collect();
         let best_score = path_score(&paths[i]);
 
         // if the best possible score added to best_score is still < acc - then we are finished!
@@ -276,24 +278,23 @@ fn part_b(lines: &[String]) -> AResult<u32> {
             // in order to beat best score - this candidate must have a path_score > acc - best_score;
             let reqd_score = if acc == 0 {
                 // acc not yet set - anything will do :)
-                0u32
+                0
             } else {
                 acc - best_score
             };
 
-            let cand = BTreeSet::from_iter(path_j.iter().filter(|x| x.ends_with("_O")));
+            let cand: BTreeSet<_> = path_j.iter().filter(|x| x.ends_with("_O")).collect();
             if best.is_disjoint(&cand) {
                 let cand_score = path_score(path_j);
                 if cand_score < reqd_score {
                     break; // need to move the outer loop on by 1
-                } else {
-                    acc = best_score + cand_score; // new leader :)
                 }
+                acc = best_score + cand_score; // new leader :)
             }
         }
     }
 
-    Ok(acc)
+    Ok(acc.try_into().unwrap())
 }
 
 fn main() -> AResult<()> {
@@ -304,7 +305,7 @@ fn main() -> AResult<()> {
         .find(name)
         .expect("binary name should contain a number")
         .as_str();
-    println!("Running code for Day {}.", ex);
+    println!("Running code for Day {ex}.");
 
     // Load the appropriate input text
     let file = File::open(format!("./data/day_{ex}.txt"))?;
@@ -344,8 +345,8 @@ mod tests {
             "AA", "DD", "DD_O", "CC", "BB", "BB_O", "AA", "II", "JJ", "JJ_O", "II", "AA", "DD",
             "EE", "FF", "GG", "HH", "HH_O", "GG", "FF", "EE", "EE_O", "DD", "CC", "CC_O",
         ]
-        .iter()
-        .map(|x| x.to_string())
+        .into_iter()
+        .map(str::to_string)
         .collect::<Vec<String>>();
 
         assert_eq!(path.len(), 25);
