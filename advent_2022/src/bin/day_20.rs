@@ -9,11 +9,9 @@ use std::{
 type AResult<T> = anyhow::Result<T>;
 
 fn mix(nums: &mut Vec<(usize, isize)>) {
-    let mut temp: Vec<(usize, isize)> = nums.to_vec();
-
     for original_index in 0..nums.len() {
-        // Where is this pair in the "temp" vec
-        let (current_index, v) = temp
+        // Where is this pair in the vec
+        let (current_index, v) = nums
             .iter()
             .enumerate()
             .find_map(|(ni, &(oi, v))| {
@@ -24,20 +22,17 @@ fn mix(nums: &mut Vec<(usize, isize)>) {
                 }
             })
             .unwrap();
-        temp.remove(current_index);
+        nums.remove(current_index);
 
         let mut new_index = current_index as isize + v;
 
         // Wrap around indexes
-        new_index = new_index.rem_euclid(temp.len() as isize);
+        new_index = new_index.rem_euclid(nums.len() as isize);
 
         // In the example text index 0 is displayed at the END of the text
         // but it still counts as position 0 (as len mod len = 0);
-        temp.insert(new_index as usize, (original_index, v));
+        nums.insert(new_index as usize, (original_index, v));
     }
-
-    // Now assign the appropriate numbers back into the num vec from the temp one
-    nums.copy_from_slice(&temp)
 }
 
 fn part_a(lines: &[String]) -> AResult<isize> {
