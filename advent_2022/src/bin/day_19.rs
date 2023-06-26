@@ -3,6 +3,8 @@ use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::Regex;
 use std::{
+    cmp::min,
+    collections::HashSet,
     fs::File,
     io::{BufRead, BufReader},
     time::Instant,
@@ -42,7 +44,7 @@ impl From<&String> for Blueprint {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 struct State {
     time: usize,
     // resources available
@@ -58,52 +60,104 @@ struct State {
     geos: usize,
 }
 
+impl State {
+    fn upper(self, time_remaining: usize) -> usize {
+        // Return the upper bound on sub-solutions of this state given the time remaining
+        // (with relaxed constraints)
+        // Assume - we create 1 new geode robot each tick, and all of them return geodes
+
+        let mut r_count = self.r_geode;
+        let mut total = self.geos;
+
+        for _ in 0..time_remaining {
+            total += r_count;
+            r_count += 1;
+        }
+
+        total
+    }
+
+    fn lower(self, time_remaining: usize) -> usize {
+        // Lower bound is simply how many geodes have already been harvested
+        // + how many geodes the existing robots will harvest in the remaining time
+        self.geos + (time_remaining * self.r_geode)
+    }
+}
+
 fn parse(lines: &[String]) -> Vec<Blueprint> {
     lines.iter().map(Blueprint::from).collect()
 }
 
-fn evaluate_bp(bp: Blueprint, time_limit: usize) -> usize {
-    let mut to_check: Vec<State> = vec![State {
-        time: 0, // to be read as "this is the state at the end of {time} minutes"
-        ore: 0,
-        clay: 0,
-        obs: 0,
-        r_ore: 1,
-        r_clay: 0,
-        r_obs: 0,
-        r_geode: 0,
-        geos: 0,
-    }];
+fn tick(bp: &Blueprint, states: &HashSet<State>, time_remaining: usize) -> HashSet<State> {
+    // In each tick we generate all possible successor states - filtering on bounds
+    // is done outside this method
+    states
+        .iter()
+        .flat_map(|state| {
+            let max_ore_cost = [
+                bp.clay_ore_cost,
+                bp.geo_ore_cost,
+                bp.obs_ore_cost,
+                bp.geo_ore_cost,
+            ]
+            .into_iter()
+            .max()
+            .unwrap();
+            let max_clay_cost = bp.obs_clay_cost;
+            let max_obs_cost = bp.geo_obs_cost;
 
-    for _t in 1..=time_limit {
-        let mut next_ts = Vec::with_capacity(to_check.len() * 4);
-        next_ts.par_extend(to_check.into_par_iter().flat_map(|state| {
+            // Clamp the resources in the noop state to the maximum number of each type
+            // that could be consumed (this allows the containing Set to do deduplication)
             let noop = State {
                 time: state.time + 1,
-                ore: state.ore + state.r_ore,
-                clay: state.clay + state.r_clay,
-                obs: state.obs + state.r_obs,
+                ore: min(state.ore + state.r_ore, max_ore_cost * (1 + time_remaining)),
+                clay: min(
+                    state.clay + state.r_clay,
+                    max_clay_cost * (1 + time_remaining),
+                ),
+                obs: min(state.obs + state.r_obs, max_obs_cost * (1 + time_remaining)),
                 geos: state.geos + state.r_geode,
-                ..state
+                ..*state
             };
 
-            let mut successors = vec![noop];
+            let mut successors = Vec::with_capacity(5);
+            // Only push the noop state if we don't already have the maximum number
+            // of effective robots (more than this will just lead to the stockpiles
+            // growing out of control)
+            if state.r_clay < max_clay_cost
+                && state.r_ore < max_ore_cost
+                && state.r_obs < max_obs_cost
+            {
+                successors.push(noop);
+            }
 
-            if state.ore >= bp.ore_ore_cost {
+            // Create a new robots of each type IFF
+            // 1) We have the resources to build one
+            // 2) We don't already have the maximum effective number of them
+
+            // New Ore
+            if state.ore >= bp.ore_ore_cost && state.r_ore < max_ore_cost {
                 successors.push(State {
                     ore: noop.ore - bp.ore_ore_cost,
                     r_ore: noop.r_ore + 1,
                     ..noop
                 });
             }
-            if state.ore >= bp.clay_ore_cost {
+
+            // New Clay
+            if state.ore >= bp.clay_ore_cost && state.r_clay < max_clay_cost {
                 successors.push(State {
                     ore: noop.ore - bp.clay_ore_cost,
                     r_clay: noop.r_clay + 1,
                     ..noop
                 });
             }
-            if state.ore >= bp.obs_ore_cost && state.clay >= bp.obs_clay_cost {
+
+            // New Obsidian
+            if state.ore >= bp.obs_ore_cost
+                && state.clay >= bp.obs_clay_cost
+                && state.r_obs < max_obs_cost
+            {
                 successors.push(State {
                     ore: noop.ore - bp.obs_ore_cost,
                     clay: noop.clay - bp.obs_clay_cost,
@@ -111,6 +165,8 @@ fn evaluate_bp(bp: Blueprint, time_limit: usize) -> usize {
                     ..noop
                 });
             }
+
+            // New Geode
             if state.ore >= bp.geo_ore_cost && state.obs >= bp.geo_obs_cost {
                 successors.push(State {
                     ore: noop.ore - bp.geo_ore_cost,
@@ -121,36 +177,49 @@ fn evaluate_bp(bp: Blueprint, time_limit: usize) -> usize {
             }
 
             successors
-        }));
+        })
+        .collect()
+}
 
-        // Beam search - sort on heuristic and limit to best N items
-        next_ts.sort_by(|s1, s2| {
-            // Heursitic prefers numbers of advanced robots, then the
-            // quantity of the basic common resources.  There might be a better
-            // one that lets you reduce the beam size
-            (s1.geos, s1.r_geode, s1.r_obs, s1.ore, s1.clay)
-                .cmp(&(s2.geos, s2.r_geode, s2.r_obs, s2.ore, s2.clay))
-                .reverse()
-        });
+fn evaluate_bp(bp: Blueprint, time_limit: usize) -> usize {
+    let mut states: HashSet<State> = HashSet::new();
+    states.insert(State {
+        time: 0, // to be read as "this is the state at the end of {time} minutes"
+        ore: 0,
+        clay: 0,
+        obs: 0,
+        r_ore: 1,
+        r_clay: 0,
+        r_obs: 0,
+        r_geode: 0,
+        geos: 0,
+    });
 
-        // Beam size is arrived at my trial-and-error, if using a different input
-        // you might need to increase it from this value
-        to_check = next_ts.into_iter().take(50000).collect();
+    for time_remaining in (1..=time_limit).rev() {
+        states = tick(&bp, &states, time_remaining);
+
+        // Only keep states that might be better than the current best lower bound
+        let best_lb = states
+            .iter()
+            .map(|s| s.lower(time_remaining))
+            .max()
+            .unwrap();
+        states.retain(|s| s.upper(time_remaining) >= best_lb);
     }
 
-    to_check.iter().map(|s| s.geos).max().unwrap()
+    states.iter().map(|s| s.geos).max().unwrap()
 }
 
 fn part_a(lines: &[String]) -> usize {
     parse(lines)
-        .into_iter()
+        .into_par_iter()
         .map(|bp| bp.id * evaluate_bp(bp, 24))
         .sum()
 }
 
 fn part_b(lines: &[String]) -> usize {
     parse(&lines[..3])
-        .into_iter()
+        .into_par_iter()
         .map(|bp| evaluate_bp(bp, 32))
         .product()
 }
