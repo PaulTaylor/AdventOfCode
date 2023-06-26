@@ -204,6 +204,46 @@ fn part_a(lines: &[String]) -> AResult<usize> {
     Err(anyhow::format_err!("Solution is not found"))
 }
 
+#[derive(PartialEq, Eq, Clone)]
+struct BPath {
+    path: Vec<String>,
+    score: usize,
+    opened: HashSet<String>,
+}
+
+impl PartialOrd for BPath {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for BPath {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        (self.score, &self.path).cmp(&(other.score, &other.path))
+    }
+}
+
+fn path_score(p: &[String], valves: &HashMap<String, Valve>) -> usize {
+    let mut acc: usize = 0;
+    for (t, a) in p.iter().enumerate() {
+        if a.ends_with("_O") {
+            let rem_time = 25 - t;
+            acc += rem_time * valves[&a[0..2]].rate;
+        }
+    }
+    acc
+}
+
+impl BPath {
+    fn new(path: Vec<String>, valves: &HashMap<String, Valve>, opened: &HashSet<String>) -> BPath {
+        BPath {
+            score: path_score(&path, valves),
+            path,
+            opened: opened.clone(),
+        }
+    }
+}
+
 fn part_b(lines: &[String]) -> AResult<usize> {
     let valves = parse(lines)?;
     let all_valves: HashSet<String> = valves
@@ -218,7 +258,7 @@ fn part_b(lines: &[String]) -> AResult<usize> {
     // Generate the paths possible in the time limit (26 minutes)
     // Search for the two largest (non-overlapping) paths in that set
 
-    let mut paths: Vec<Vec<String>> = vec![];
+    let mut paths: BTreeSet<BPath> = BTreeSet::new();
     let mut queue: Vec<Vec<String>> = vec![];
     let mut first = true;
 
@@ -244,57 +284,37 @@ fn part_b(lines: &[String]) -> AResult<usize> {
         }
 
         if !path.is_empty() {
-            paths.push(path);
+            paths.insert(BPath::new(path, &valves, visited));
         }
     }
 
-    // Now, push the paths into a BTreeSet that orders them by pressure
-    let path_score = |p: &Vec<String>| -> isize {
-        let mut acc: usize = 0;
-        for (t, a) in p.iter().enumerate() {
-            if a.ends_with("_O") {
-                let rem_time = 25 - t;
-                acc += rem_time * valves[&a[0..2]].rate;
-            }
-        }
-        acc.try_into().unwrap()
-    };
+    let best_segment_score = paths.last().unwrap().score;
+    let mut best_sofar = best_segment_score;
 
-    paths.sort_by_cached_key(|p| -(path_score(p)));
-
-    let mut acc = 0;
-    let max_path_score = path_score(&paths[0]);
-
-    for i in 0..paths.len() {
-        let best: BTreeSet<_> = paths[i].iter().filter(|x| x.ends_with("_O")).collect();
-        let best_score = path_score(&paths[i]);
-
-        // if the best possible score added to best_score is still < acc - then we are finished!
-        if best_score + max_path_score < acc {
+    for left in paths.iter().rev() {
+        if left.score + best_segment_score < best_sofar {
             break;
         }
 
-        for path_j in paths[i + 1..].iter() {
-            // in order to beat best score - this candidate must have a path_score > acc - best_score;
-            let reqd_score = if acc == 0 {
-                // acc not yet set - anything will do :)
-                0
-            } else {
-                acc - best_score
-            };
+        // Iterate over the other paths (in descending score order) where the right
+        // path is completely disjoint with the left path
+        for right in paths
+            .iter()
+            .rev()
+            .filter(|o| left.opened.is_disjoint(&o.opened))
+        {
+            if left.score + right.score <= best_sofar {
+                break;
+            }
 
-            let cand: BTreeSet<_> = path_j.iter().filter(|x| x.ends_with("_O")).collect();
-            if best.is_disjoint(&cand) {
-                let cand_score = path_score(path_j);
-                if cand_score < reqd_score {
-                    break; // need to move the outer loop on by 1
-                }
-                acc = best_score + cand_score; // new leader :)
+            let combined_score = left.score + right.score;
+            if combined_score > best_sofar {
+                best_sofar = combined_score;
             }
         }
     }
 
-    Ok(acc.try_into().unwrap())
+    Ok(best_sofar)
 }
 
 fn main() -> AResult<()> {
