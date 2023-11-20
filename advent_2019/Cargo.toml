@@ -9,6 +9,7 @@ edition = "2021"
 anyhow = "1"
 humantime = "2"
 regex = "1"
+lazy_static = "1"
 
 [profile.release]
 strip = "symbols"
