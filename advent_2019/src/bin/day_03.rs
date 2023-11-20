@@ -54,8 +54,8 @@ fn generate_coords(wire: &[Instr]) -> Vec<(isize, isize)> {
 fn part_a(lines: &[String]) -> usize {
     let (w1, w2) = parse(lines);
 
-    let c1: HashSet<(isize, isize)> = HashSet::from_iter(generate_coords(&w1));
-    let c2 = HashSet::from_iter(generate_coords(&w2));
+    let c1: HashSet<_> = HashSet::from_iter(generate_coords(&w1));
+    let c2: HashSet<_> = HashSet::from_iter(generate_coords(&w2));
 
     c1.intersection(&c2)
         .map(|(row, col)| row.abs() + col.abs())
@@ -70,20 +70,19 @@ fn part_b(lines: &[String]) -> usize {
 
     let c1 = generate_coords(&w1);
     let c2 = generate_coords(&w2);
-    let c1_set: HashSet<(isize, isize)> = c1.iter().copied().collect();
-    let c2_set = c2.iter().copied().collect();
+    let c1_set: HashSet<_> = c1.iter().copied().collect();
+    let c2_set: HashSet<_> = c2.iter().copied().collect();
 
-    let dists: Vec<_> = c1_set
+    c1_set
         .intersection(&c2_set)
-        .map(|cand| {
-            let dist1 = c1.iter().position(|x| x == cand).unwrap();
-            let dist2 = c2.iter().position(|x| x == cand).unwrap();
+        .map(|a| {
+            let dist1 = c1.iter().position(|b| a == b).unwrap();
+            let dist2 = c2.iter().position(|b| a == b).unwrap();
             (dist1 + 1, dist2 + 1)
         })
         .map(|(d1, d2)| d1 + d2)
-        .collect();
-
-    dists.into_iter().min().unwrap()
+        .min()
+        .unwrap()
 }
 
 fn main() -> AResult<()> {
