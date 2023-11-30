@@ -1,0 +1,18 @@
+[package]
+name = "advent_2023"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1"
+lazy_static = "1"
+regex = "1"
+humantime = "2"
+nom = "7"
+fancy-regex = "0"
+rayon = "1"
+
+[profile.release]
+strip = "symbols"
