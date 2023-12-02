@@ -1,0 +1,3 @@
+# See https://github.com/rust-lang/rustfmt/blob/master/Configurations.md
+
+struct_lit_width = 30  # make this a little bigger (default: 18)
