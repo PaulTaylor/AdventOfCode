@@ -104,7 +104,7 @@ fn get_number_at(line: &str, loc: usize) -> Option<u32> {
 // Check the given row for any numbers that appear on it around the given "loc"
 // Adds any detected numbers to the numbers Vec
 fn check_row(line: &str, loc: usize, numbers: &mut Vec<u32>) {
-    // Check the top middle first - if it's a number it must be the only one
+    // Check the middle first - if it's a number it must be the only one
     if let Some(n) = get_number_at(line, loc) {
         numbers.push(n);
     } else {
@@ -143,7 +143,7 @@ fn part_b(lines: &[String]) -> AResult<u32> {
         // Check above (bounds check is not necessary for the given input data)
         check_row(&lines[row_id - 1], loc, &mut numbers);
 
-        // Check Left
+        // Check this row
         check_row(&lines[row_id], loc, &mut numbers);
 
         // Check Below (bounds check is not necessary for the given input data)
