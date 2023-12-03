@@ -1,6 +1,7 @@
 use humantime::format_duration;
 use regex::Regex;
 use std::{
+    cmp,
     fs::File,
     io::{BufRead, BufReader},
     time::Instant,
@@ -31,8 +32,9 @@ fn part_a(lines: &[String]) -> AResult<u32> {
 
         // Check previous row
         if row_id > 0 {
-            let prev = &lines[row_id - 1].as_str()
-                [range.start.saturating_sub(1)..(range.end + 1).clamp(0, lines[0].len())];
+            let search_start = range.start.saturating_sub(1);
+            let search_end = (range.end + 1).clamp(0, lines[0].len());
+            let prev = &lines[row_id - 1].as_str()[search_start..search_end];
             if symbol_pattern.is_match(prev) {
                 // Found match on header row
                 total += value;
@@ -41,18 +43,17 @@ fn part_a(lines: &[String]) -> AResult<u32> {
         }
 
         // Check the previous character on the same row
-        if symbol_pattern
-            .is_match(&lines[row_id].as_str()[range.start.saturating_sub(1)..range.start])
-        {
+        let this_line = lines[row_id].as_str();
+        let search_start = range.start.saturating_sub(1);
+        if symbol_pattern.is_match(&this_line[search_start..range.start]) {
             // Found match left
             total += value;
             continue;
         }
 
         // Check the following character on the same row
-        if symbol_pattern
-            .is_match(&lines[row_id].as_str()[range.end..(range.end + 1).clamp(0, lines[0].len())])
-        {
+        let search_end = cmp::min(range.end + 1, this_line.len());
+        if symbol_pattern.is_match(&this_line[range.end..search_end]) {
             // Found match right
             total += value;
             continue;
@@ -60,8 +61,10 @@ fn part_a(lines: &[String]) -> AResult<u32> {
 
         // Check the row below
         if row_id < lines.len() {
-            let next = &lines[row_id + 1].as_str()
-                [range.start.saturating_sub(1)..(range.end + 1).clamp(0, lines[0].len())];
+            let next_line = &lines[row_id + 1].as_str();
+            let search_start = range.start.saturating_sub(1);
+            let search_end = (range.end + 1).clamp(0, lines[0].len());
+            let next = &next_line[search_start..search_end];
             if symbol_pattern.is_match(next) {
                 // Found match on following row
                 total += value;
