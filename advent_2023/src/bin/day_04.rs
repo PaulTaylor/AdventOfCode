@@ -1,4 +1,12 @@
 use humantime::format_duration;
+use nom::{
+    bytes::complete::tag,
+    character::complete::{digit1, multispace0, multispace1},
+    combinator::{map, map_res},
+    multi::separated_list1,
+    sequence::{delimited, tuple},
+    IResult,
+};
 use regex::Regex;
 use std::{
     collections::{BTreeSet, HashMap},
@@ -31,39 +39,43 @@ impl Card {
     }
 }
 
-fn parse(lines: &[String]) -> AResult<Vec<Card>> {
-    let pattern: Regex = Regex::new(r"Card\s+(\d+):\s+((?:\d+\s*)+)\s+\|\s+((?:\d+\s*)+)$")?;
-    let mut cards = vec![];
-
-    for l in lines {
-        let caps = pattern.captures(l).unwrap();
-        let (_, bits): (&str, [&str; 3]) = caps.extract();
-
-        let id: usize = bits[0].parse().expect("An integer card id");
-
-        let winners = bits[1]
-            .split_whitespace()
-            .map(|s| s.parse().expect("couldn't parse int in winner list"))
-            .collect();
-
-        let mine = bits[2]
-            .split_whitespace()
-            .map(|s| s.parse().expect("couldn't parse int in my list"))
-            .collect();
-
-        cards.push(Card { id, winners, mine });
-    }
-
-    Ok(cards)
+fn number_set(l: &str) -> IResult<&str, BTreeSet<usize>> {
+    map(
+        separated_list1(multispace1, map_res(digit1, |s: &str| s.parse::<usize>())),
+        |l| l.into_iter().collect::<BTreeSet<usize>>(),
+    )(l)
 }
 
-fn part_a(lines: &[String]) -> AResult<usize> {
-    let cards = parse(lines)?;
-    Ok(cards.iter().map(Card::points).sum())
+fn card_header(l: &str) -> IResult<&str, usize> {
+    delimited(
+        tuple((tag("Card"), multispace1)),
+        map_res(digit1, |s: &str| s.parse::<usize>()),
+        tuple((tag(":"), multispace1)),
+    )(l)
 }
 
-fn part_b(lines: &[String]) -> AResult<usize> {
-    let cards = parse(lines)?;
+fn parse_card(l: &str) -> Card {
+    let (_, (id, winners, _, mine)) = tuple((
+        card_header,
+        number_set,
+        tuple((multispace0, tag("|"), multispace0)),
+        number_set,
+    ))(l)
+    .unwrap_or_else(|_| panic!("Can't parse {l} as a card"));
+
+    Card { id, winners, mine }
+}
+
+fn parse(lines: &[String]) -> Vec<Card> {
+    lines.iter().map(|s| parse_card(s)).collect()
+}
+
+fn part_a(lines: &[String]) -> usize {
+    parse(lines).iter().map(Card::points).sum()
+}
+
+fn part_b(lines: &[String]) -> usize {
+    let cards = parse(lines);
     let mut copies: HashMap<usize, usize> = cards.iter().map(|c| (c.id, 1)).collect();
 
     for card in cards {
@@ -75,7 +87,7 @@ fn part_b(lines: &[String]) -> AResult<usize> {
         }
     }
 
-    Ok(copies.values().sum())
+    copies.values().sum()
 }
 
 fn main() -> AResult<()> {
@@ -94,8 +106,8 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice())?);
-    println!("Part B result = {}", part_b(lines.as_slice())?);
+    println!("Part A result = {}", part_a(lines.as_slice()));
+    println!("Part B result = {}", part_b(lines.as_slice()));
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -115,16 +127,14 @@ mod tests {
     Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11";
 
     #[test]
-    fn test_a() -> AResult<()> {
+    fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice())?, 13);
-        Ok(())
+        assert_eq!(part_a(lines.as_slice()), 13);
     }
 
     #[test]
-    fn test_b() -> AResult<()> {
+    fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(lines.as_slice())?, 30);
-        Ok(())
+        assert_eq!(part_b(lines.as_slice()), 30);
     }
 }
