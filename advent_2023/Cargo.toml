@@ -13,6 +13,7 @@ humantime = "2"
 nom = "7"
 fancy-regex = "0"
 rayon = "1"
+indicatif = { version = "0.17.7", features = ["rayon"] }
 
 [profile.release]
 strip = "symbols"
