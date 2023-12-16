@@ -8,19 +8,6 @@ use std::{
 
 type AResult<T> = anyhow::Result<T>;
 
-fn _grid_string(grid: &[Vec<char>]) -> String {
-    let s: String = grid
-        .iter()
-        .map(|row| -> String {
-            let mut s: String = row.iter().collect();
-            s.push('\n');
-            s
-        })
-        .collect();
-
-    s.trim_end().to_string()
-}
-
 fn parse(lines: &[String]) -> Vec<Vec<char>> {
     lines.iter().map(|l| l.chars().collect()).collect()
 }
