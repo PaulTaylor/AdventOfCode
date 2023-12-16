@@ -22,19 +22,6 @@ fn transpose(grid: &[Vec<char>]) -> Vec<Vec<char>> {
         .collect()
 }
 
-fn _grid_string(grid: &[Vec<char>]) -> String {
-    let s: String = grid
-        .iter()
-        .map(|row| -> String {
-            let mut s: String = row.iter().collect();
-            s.push('\n');
-            s
-        })
-        .collect();
-
-    s.trim_end().to_string()
-}
-
 fn find_vertical_lor(grid: &[Vec<char>], is_b: bool) -> Option<usize> {
     find_horizontal_lor(&transpose(grid), is_b)
 }
