@@ -82,6 +82,7 @@ fn part_b(lines: &[String]) -> usize {
     cycle_lengths.into_iter().reduce(num::integer::lcm).unwrap()
 }
 
+#[cfg(not(tarpaulin_include))]
 fn main() -> AResult<()> {
     // Figure out which exercise we are so we can load the correct input file
     let pattern = Regex::new("[0-9]+$")?;

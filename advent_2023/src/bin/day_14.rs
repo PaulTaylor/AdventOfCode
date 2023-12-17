@@ -179,6 +179,7 @@ fn part_b(lines: &[String]) -> usize {
     panic!("No cycle detected in scores, perhaps you need to increase SEED_ITERS")
 }
 
+#[cfg(not(tarpaulin_include))]
 fn main() -> AResult<()> {
     // Figure out which exercise we are so we can load the correct input file
     let pattern = Regex::new("[0-9]+$")?;
