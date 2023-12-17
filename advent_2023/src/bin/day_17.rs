@@ -1,7 +1,6 @@
 use humantime::format_duration;
 use regex::Regex;
 use std::{
-    cmp::Ordering,
     collections::{BTreeMap, BinaryHeap},
     fs::File,
     io::{BufRead, BufReader},
