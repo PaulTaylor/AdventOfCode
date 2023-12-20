@@ -164,11 +164,13 @@ fn part_b(lines: &[String]) -> usize {
     // If you draw the digraph for the modules and connections then you'll find
     // there are 4 major components. (jp -> pg, bx -> sp, jq -> sv, nv -> qs)
     //
-    // These can all modelled separately to see when what the periodicity of
-    // emitting high would be for each component.
+    // These can all modelled separately to see what the periodicity of
+    // emitting high would be for each component.  All the ends of the pairs
+    // above are inverters so this is the same as them receiving Low.
     //
-    // We can then use the LCM for those periods to determine the first period when
-    // the would all line up together
+    // We can then use the LCM of those button push periods to determine the
+    // first period when all components would all line up together and cause
+    // gf to send a Low to rx
 
     const MAX: usize = 5000;
     let modules = &mut parse(lines);
@@ -189,6 +191,7 @@ fn part_b(lines: &[String]) -> usize {
             while let Some(s) = queue.pop_front() {
                 let Send(source, target_name, signal) = s;
 
+                // We've found the period of this start/end pair - move onto the next one.
                 if target_name == end && signal == Signal::Low && push_count > 0 {
                     push_counts.push(push_count + 1);
                     continue 'outer;
