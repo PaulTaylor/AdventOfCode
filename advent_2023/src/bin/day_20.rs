@@ -166,7 +166,7 @@ fn part_b(lines: &[String]) -> usize {
     //
     // These can all modelled separately to see what the periodicity of
     // emitting high would be for each component.  All the ends of the pairs
-    // above are inverters so this is the same as them receiving Low.
+    // above are inverters so this is the same as them sending Low.
     //
     // We can then use the LCM of those button push periods to determine the
     // first period when all components would all line up together and cause
