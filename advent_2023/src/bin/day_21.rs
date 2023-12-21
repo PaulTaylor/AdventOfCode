@@ -86,11 +86,11 @@ fn part_a(lines: &[String]) -> usize {
 fn part_b(lines: &[String]) -> AResult<i128> {
     // Obs: Visited counts follow a (ragged) quadratic - but too close to be coincidence.
     // Obs: The weird target number / grid size is a multiple of 202300.XXXXX - coincidence??
-    // Obs: steps(grid_size), steps(grid_size*2), steps(grid_size)*3 follow a clean quadratic
+    // Obs: steps(grid_size), steps(grid_size*2), steps(grid_size*3) follow a clean quadratic
     //
-    // If I can workout the offset (remainder it the division above), and then do run to 3 periods
-    // of (grid_size * i) + offset.  Then I can get the quadratic from Wolfram Alpha and get the
-    // 202300'th element.
+    // If I can workout the offset (remainder in the division above), and then do run to 3 periods
+    // of (grid_size * i) + offset.  Then I can get the quadratic parameters from Wolfram Alpha and
+    // then calculate the 202300'th element.
     //
     const TARGET_STEPS: i128 = 26_501_365;
     let lines_len = lines.len() as i128;
