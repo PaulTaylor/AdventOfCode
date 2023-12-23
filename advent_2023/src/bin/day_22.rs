@@ -1,6 +1,6 @@
 use humantime::format_duration;
-use indicatif::{ParallelProgressIterator, ProgressIterator};
-use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
+use indicatif::ParallelProgressIterator;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use regex::Regex;
 use std::{
     cmp::Ordering,
