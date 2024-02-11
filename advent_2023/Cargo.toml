@@ -15,6 +15,7 @@ fancy-regex = "0"
 rayon = "1"
 indicatif = { version = "0.17.7", features = ["rayon"] }
 num = "0.4.1"
+rustworkx-core = "0.14.0"
 
 [profile.release]
 strip = "symbols"
