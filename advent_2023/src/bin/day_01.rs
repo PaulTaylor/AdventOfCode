@@ -13,25 +13,10 @@ fn part_a(lines: &[String]) -> usize {
     lines
         .iter()
         .map(|l| {
-            let c = p.captures(l);
-            if let Some(caps) = c {
-                let m1 = caps.get(1);
-                let m2 = caps.get(2);
-
-                match (m1, m2) {
-                    (Some(d1), Some(d2)) => {
-                        (10 * d1.as_str().parse::<usize>().unwrap())
-                            + d2.as_str().parse::<usize>().unwrap()
-                    }
-                    (None, Some(d1)) => {
-                        (10 * d1.as_str().parse::<usize>().unwrap())
-                            + d1.as_str().parse::<usize>().unwrap()
-                    }
-                    _ => panic!("Something unexpected happened"),
-                }
-            } else {
-                0
-            }
+            let c = p.captures(l).unwrap();
+            let d2: usize = c.get(2).and_then(|s| s.as_str().parse().ok()).unwrap();
+            let d1 = c.get(1).and_then(|s| s.as_str().parse().ok()).unwrap_or(d2);
+            (d1 * 10) + d2
         })
         .sum()
 }
@@ -39,13 +24,9 @@ fn part_a(lines: &[String]) -> usize {
 fn part_b(lines: &[String]) -> usize {
     let mut total = 0;
     for line in lines {
-        // Find the first digit through forward search
-        let mut d1 = '!';
-        for offset in 0..line.len() {
-            let segment = &line[offset..];
-
-            let found = match segment {
-                s if s.starts_with(|c: char| c.is_ascii_digit()) => segment.chars().next(),
+        let numbers: Vec<_> = (0..line.len())
+            .filter_map(|e| match &line[e..] {
+                s if s.starts_with(|c: char| c.is_ascii_digit()) => s.chars().next(),
                 s if s.starts_with("one") => Some('1'),
                 s if s.starts_with("two") => Some('2'),
                 s if s.starts_with("three") => Some('3'),
@@ -56,45 +37,13 @@ fn part_b(lines: &[String]) -> usize {
                 s if s.starts_with("eight") => Some('8'),
                 s if s.starts_with("nine") => Some('9'),
                 _ => None,
-            };
+            })
+            .map(|c| (c as usize) - 48)
+            .collect();
 
-            if let Some(d) = found {
-                d1 = d;
-                break;
-            }
-        }
-
-        assert_ne!(d1, '!', "The first digit was not found");
-
-        // Search backwards for the last one
-        let mut d2 = '!';
-        for offset in (1..=line.len()).rev() {
-            let segment = &line[0..offset];
-
-            let found = match segment {
-                s if s.ends_with(|c: char| c.is_ascii_digit()) => segment.chars().last(),
-                s if s.ends_with("one") => Some('1'),
-                s if s.ends_with("two") => Some('2'),
-                s if s.ends_with("three") => Some('3'),
-                s if s.ends_with("four") => Some('4'),
-                s if s.ends_with("five") => Some('5'),
-                s if s.ends_with("six") => Some('6'),
-                s if s.ends_with("seven") => Some('7'),
-                s if s.ends_with("eight") => Some('8'),
-                s if s.ends_with("nine") => Some('9'),
-                _ => None,
-            };
-
-            if let Some(d) = found {
-                d2 = d;
-                break;
-            }
-        }
-
-        assert_ne!(d2, '!', "The last digit was not found");
-
-        let num = format!("{d1}{d2}");
-        total += num.parse::<usize>().unwrap();
+        let d1 = numbers[0];
+        let d2 = numbers[numbers.len() - 1];
+        total += (d1 * 10) + d2;
     }
 
     total

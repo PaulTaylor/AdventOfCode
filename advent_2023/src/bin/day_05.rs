@@ -1,6 +1,5 @@
 use anyhow::anyhow;
 use humantime::format_duration;
-use indicatif::ParallelProgressIterator;
 use nom::{
     bytes::complete::tag,
     character::complete::{digit1, multispace0, multispace1, newline, none_of, space0},
@@ -9,10 +8,9 @@ use nom::{
     sequence::{pair, preceded, terminated, tuple},
     IResult,
 };
-use rayon::prelude::*;
 use regex::Regex;
 use std::{
-    cmp,
+    cmp::{self, max, min},
     fs::File,
     io::{BufRead, BufReader},
     time::Instant,
@@ -23,11 +21,11 @@ type AResult<T> = anyhow::Result<T>;
 #[derive(Debug)]
 struct IntervalMap {
     _name: String,
-    ranges: Vec<(usize, usize, usize)>, // dest_start, source_start, length
+    ranges: Vec<(isize, isize, isize)>, // dest_start, source_start, length
 }
 
 impl IntervalMap {
-    fn map(&self, source: usize) -> usize {
+    fn map(&self, source: isize) -> isize {
         for (dest_start, source_start, length) in &self.ranges {
             let source_end = source_start + length;
             if (*source_start..source_end).contains(&source) {
@@ -41,12 +39,12 @@ impl IntervalMap {
     }
 }
 
-fn interval(input: &str) -> IResult<&str, (usize, usize, usize)> {
+fn interval(input: &str) -> IResult<&str, (isize, isize, isize)> {
     map(
         many_m_n(
             3,
             3,
-            terminated(map_res(digit1, |v: &str| v.parse::<usize>()), space0),
+            terminated(map_res(digit1, |v: &str| v.parse::<isize>()), space0),
         ),
         |v| (v[0], v[1], v[2]),
     )(input)
@@ -73,22 +71,22 @@ fn block_list(input: &str) -> IResult<&str, Vec<IntervalMap>> {
     separated_list1(pair(newline, newline), map_block)(input)
 }
 
-fn seeds(input: &str) -> IResult<&str, Vec<usize>> {
+fn seeds(input: &str) -> IResult<&str, Vec<isize>> {
     preceded(
         tag("seeds: "),
-        separated_list1(multispace1, map_res(digit1, |v: &str| v.parse::<usize>())),
+        separated_list1(multispace1, map_res(digit1, |v: &str| v.parse::<isize>())),
     )(input)
 }
 
-fn parse(input: &str) -> IResult<&str, (Vec<usize>, Vec<IntervalMap>)> {
+fn parse(input: &str) -> IResult<&str, (Vec<isize>, Vec<IntervalMap>)> {
     tuple((terminated(seeds, multispace0), block_list))(input)
 }
 
 #[allow(clippy::redundant_closure_for_method_calls)]
-fn part_a(lines: &str) -> AResult<usize> {
+fn part_a(lines: &str) -> AResult<isize> {
     let (_, (seeds, intervals)) = parse(lines).map_err(|e| e.to_owned())?;
 
-    let mut min = usize::MAX;
+    let mut min = isize::MAX;
     for seed in seeds {
         // Yes, I could write this in a loop.
         let soil = intervals[0].map(seed);
@@ -104,40 +102,53 @@ fn part_a(lines: &str) -> AResult<usize> {
     Ok(min)
 }
 
-//
-// This is a simplistic brute-force solution utilising the excellent rayon
-// library for parallel processing.  Run time is approximately 3.5 minutes
-// on my desktop.
-//
-// I may revisit this in the future and implement the significantly more
-// efficient range manipulation approach.
-//
-#[allow(clippy::redundant_closure_for_method_calls)]
-fn part_b(lines: &str) -> AResult<usize> {
-    let (_, (raw_seed_ranges, intervals)) = parse(lines).map_err(|e| e.to_owned())?;
+#[allow(clippy::redundant_closure_for_method_calls, clippy::never_loop)]
+fn part_b(lines: &str) -> AResult<isize> {
+    let (_, (raw_seed_ranges, mappers)) = parse(lines).map_err(|e| e.to_owned())?;
 
-    let seed_ranges = raw_seed_ranges.chunks(2).map(|p| p[0]..p[0] + p[1]);
+    let mut ranges: Vec<_> = raw_seed_ranges
+        .chunks(2)
+        .map(|p| (p[0], p[0] + p[1]))
+        .collect();
 
-    let total = seed_ranges.clone().flatten().count();
-    println!("Seed count = {total}");
+    for mapping in mappers {
+        let mut new_ranges = vec![];
+        while let Some((range_start, range_end)) = ranges.pop() {
+            let mut mapped = false;
+            for (dst_start, src_start, len) in &mapping.ranges {
+                let overlap_start = max(range_start, *src_start);
+                let overlap_end = min(range_end, src_start + len);
+                if overlap_start < overlap_end {
+                    new_ranges.push((
+                        dst_start + (overlap_start - src_start),
+                        dst_start + (overlap_end - src_start),
+                    ));
 
-    let min = seed_ranges
-        .flatten()
-        .par_bridge()
-        .progress_count(total as u64)
-        .map(|seed| {
-            // Yes, I could write this in a loop.
-            let soil = intervals[0].map(seed);
-            let fertilizer = intervals[1].map(soil);
-            let water = intervals[2].map(fertilizer);
-            let light = intervals[3].map(water);
-            let temp = intervals[4].map(light);
-            let humid = intervals[5].map(temp);
-            intervals[6].map(humid)
-        })
-        .min();
+                    if range_start < overlap_start {
+                        ranges.push((range_start, overlap_start));
+                    }
 
-    min.ok_or(anyhow!("Error"))
+                    if overlap_end < range_end {
+                        ranges.push((overlap_end, range_end));
+                    }
+                    mapped = true;
+                    break;
+                }
+            }
+
+            // No match - range is proxied directly through
+            if !mapped {
+                new_ranges.push((range_start, range_end));
+            }
+        }
+        ranges = new_ranges;
+    }
+
+    ranges
+        .into_iter()
+        .map(|(a, _b)| a)
+        .min()
+        .ok_or(anyhow!("No result found"))
 }
 
 #[cfg(not(tarpaulin_include))]
