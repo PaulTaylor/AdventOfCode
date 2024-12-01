@@ -1,6 +1,7 @@
 use humantime::format_duration;
 use regex::Regex;
 use std::{
+    collections::HashMap,
     fs::File,
     io::{BufRead, BufReader},
     time::Instant,
@@ -8,16 +9,35 @@ use std::{
 
 type AResult<T> = anyhow::Result<T>;
 
-fn parse(lines: &[String]) -> Vec<Vec<char>> {
-    panic!("Not implemented");
+fn parse(lines: &[String]) -> (Vec<usize>, Vec<usize>) {
+    let mut a = Vec::with_capacity(lines.len());
+    let mut b = Vec::with_capacity(lines.len());
+
+    for line in lines {
+        let split: Vec<_> = line.split_whitespace().flat_map(str::parse).collect();
+        a.push(split[0]);
+        b.push(split[1]);
+    }
+
+    (a, b)
 }
 
 fn part_a(lines: &[String]) -> usize {
-    panic!("Not implemented");
+    let (mut a, mut b) = parse(lines);
+    a.sort_unstable();
+    b.sort_unstable();
+    a.into_iter().zip(b).map(|(l, r)| l.abs_diff(r)).sum()
 }
 
 fn part_b(lines: &[String]) -> usize {
-    panic!("Not implemented");
+    let (a, b) = parse(lines);
+    let mut b_freq = HashMap::new();
+    for v in b {
+        b_freq.entry(v).and_modify(|i| *i += 1).or_insert(1);
+    }
+    a.into_iter()
+        .map(|a| a * b_freq.get(&a).unwrap_or(&0))
+        .sum()
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -50,19 +70,22 @@ fn main() -> AResult<()> {
 mod tests {
     use super::*;
 
-    const TEST_INPUT: &str = "Some
-    input
-    string";
+    const TEST_INPUT: &str = "3   4
+                              4   3
+                              2   5
+                              1   3
+                              3   9
+                              3   3";
 
     #[test]
     fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice()), 0);
+        assert_eq!(part_a(lines.as_slice()), 11);
     }
 
     #[test]
     fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(&lines), 1);
+        assert_eq!(part_b(&lines), 31);
     }
 }
