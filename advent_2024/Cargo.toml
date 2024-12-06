@@ -9,6 +9,9 @@ edition = "2021"
 anyhow = "1"
 regex = "1"
 humantime = "2"
+indexmap = { version = "2.7", features = ["rayon"] }
+indicatif = { version = "0.17", features = ["rayon"] }
+rayon = "1.10"
 
 [profile.release]
 strip = "symbols"
