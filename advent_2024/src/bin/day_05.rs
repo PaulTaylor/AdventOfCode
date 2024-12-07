@@ -67,7 +67,7 @@ fn part_a(lines: &[String]) -> usize {
     correct.into_iter().map(|l| l[l.len() / 2]).sum()
 }
 
-fn no_incoming(outgoing_edges: &HashMap<usize, BTreeSet<usize>>, m: &usize) -> bool {
+fn no_incoming(outgoing_edges: &HashMap<usize, BTreeSet<usize>>, m: usize) -> bool {
     let targets: BTreeSet<_> = outgoing_edges.values().flatten().collect();
     !targets.contains(&m)
 }
@@ -107,7 +107,7 @@ fn kahn(rules: &HashMap<usize, BTreeSet<usize>>, input: Vec<usize>) -> Vec<usize
                     l.remove(&m);
                 });
 
-                if no_incoming(&outgoing_edges, &m) {
+                if no_incoming(&outgoing_edges, m) {
                     s.insert(m);
                 }
             }
