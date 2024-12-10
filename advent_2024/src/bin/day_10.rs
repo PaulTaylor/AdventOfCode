@@ -66,11 +66,11 @@ fn part_ab(lines: &[String]) -> (usize, usize) {
     // Walk the paths recursively
     let mut paths: HashMap<Coord, HashSet<Vec<Coord>>> = HashMap::new();
     for (zx, zy) in zeroes {
-        let end_points = recurse(zx, zy, vec![(zx, zy)], &grid);
+        let paths_from_point = recurse(zx, zy, vec![], &grid);
         paths
             .entry((zx, zy))
-            .and_modify(|s| s.extend(end_points.clone()))
-            .or_insert(end_points);
+            .and_modify(|s| s.extend(paths_from_point.clone()))
+            .or_insert(paths_from_point);
     }
 
     // Generate the results from the sets of paths
@@ -84,9 +84,7 @@ fn part_ab(lines: &[String]) -> (usize, usize) {
         })
         .sum();
 
-    let unique_path_sum = paths.values().map(HashSet::len).sum();
-
-    (unique_end_sum, unique_path_sum)
+    (unique_end_sum, paths.values().map(HashSet::len).sum())
 }
 
 #[cfg(not(tarpaulin_include))]
