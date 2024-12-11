@@ -40,15 +40,15 @@ fn part_a() -> usize {
     let start = 165_432;
     let end = 707_912;
 
-    let DIGITS = "123456789".chars();
+    let digits = "123456789".chars();
     let mut valid = vec![];
 
-    for c1 in DIGITS.clone() {
-        for c2 in DIGITS.clone().filter(|x| x >= &c1) {
-            for c3 in DIGITS.clone().filter(|x| x >= &c2) {
-                for c4 in DIGITS.clone().filter(|x| x >= &c3) {
-                    for c5 in DIGITS.clone().filter(|x| x >= &c4) {
-                        for c6 in DIGITS.clone().filter(|x| x >= &c5) {
+    for c1 in digits.clone() {
+        for c2 in digits.clone().filter(|x| x >= &c1) {
+            for c3 in digits.clone().filter(|x| x >= &c2) {
+                for c4 in digits.clone().filter(|x| x >= &c3) {
+                    for c5 in digits.clone().filter(|x| x >= &c4) {
+                        for c6 in digits.clone().filter(|x| x >= &c5) {
                             if let Some(the_num) = is_valid_a(&format!("{c1}{c2}{c3}{c4}{c5}{c6}"))
                             {
                                 if the_num > end {
@@ -73,15 +73,15 @@ fn part_b() -> usize {
     let start = 165_432;
     let end = 707_912;
 
-    let DIGITS = "123456789".chars();
+    let digits = "123456789".chars();
     let mut valid = vec![];
 
-    for c1 in DIGITS.clone() {
-        for c2 in DIGITS.clone().filter(|x| x >= &c1) {
-            for c3 in DIGITS.clone().filter(|x| x >= &c2) {
-                for c4 in DIGITS.clone().filter(|x| x >= &c3) {
-                    for c5 in DIGITS.clone().filter(|x| x >= &c4) {
-                        for c6 in DIGITS.clone().filter(|x| x >= &c5) {
+    for c1 in digits.clone() {
+        for c2 in digits.clone().filter(|x| x >= &c1) {
+            for c3 in digits.clone().filter(|x| x >= &c2) {
+                for c4 in digits.clone().filter(|x| x >= &c3) {
+                    for c5 in digits.clone().filter(|x| x >= &c4) {
+                        for c6 in digits.clone().filter(|x| x >= &c5) {
                             if let Some(the_num) = is_valid_b(&format!("{c1}{c2}{c3}{c4}{c5}{c6}"))
                             {
                                 if the_num > end {

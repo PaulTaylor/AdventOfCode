@@ -115,6 +115,7 @@ pub fn run_program(memory: &mut [isize], input: &[isize]) -> Vec<isize> {
     output
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -136,14 +137,14 @@ mod tests {
     #[test]
     fn test_day_05_pmode() {
         let mut memory = vec![1002, 4, 3, 4, 33];
-        let output = run_program(&mut memory, &[]);
+        run_program(&mut memory, &[]);
         assert_eq!(memory[4], 99);
     }
 
     #[test]
     fn test_day_05_negatives() {
         let mut memory = vec![1101, 100, -1, 4, 0];
-        let output = run_program(&mut memory, &[]);
+        run_program(&mut memory, &[]);
         assert_eq!(memory[4], 99);
     }
 

@@ -10,11 +10,11 @@ use std::{
 type AResult<T> = anyhow::Result<T>;
 
 fn parse(lines: &[String]) -> Vec<isize> {
-    return lines[0]
+    lines[0]
         .split(',')
         .map(str::parse)
         .map(Result::unwrap)
-        .collect();
+        .collect()
 }
 
 fn part_a(lines: &[String]) -> isize {

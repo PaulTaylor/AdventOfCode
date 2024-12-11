@@ -10,7 +10,7 @@ use advent_2019::run_program;
 
 type AResult<T> = anyhow::Result<T>;
 
-fn parse(lines: &[String]) -> Vec<usize> {
+fn parse(lines: &[String]) -> Vec<isize> {
     lines[0]
         .split(',')
         .map(str::parse)
@@ -18,15 +18,15 @@ fn parse(lines: &[String]) -> Vec<usize> {
         .collect()
 }
 
-fn part_a(lines: &[String]) -> usize {
+fn part_a(lines: &[String]) -> isize {
     let mut code = parse(lines);
     code[1] = 12;
     code[2] = 2;
-    run_program(&mut code);
+    run_program(&mut code, &[]);
     code[0]
 }
 
-fn part_b(lines: &[String]) -> usize {
+fn part_b(lines: &[String]) -> isize {
     let code = parse(lines);
 
     for noun in 0..100 {
@@ -34,7 +34,7 @@ fn part_b(lines: &[String]) -> usize {
             let mut memory = code.clone();
             memory[1] = noun;
             memory[2] = verb;
-            run_program(&mut memory);
+            run_program(&mut memory, &[]);
 
             if memory[0] == 19_690_720 {
                 return 100 * noun + verb;
