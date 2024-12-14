@@ -11,6 +11,7 @@ conv = "0.3"
 regex = "1"
 humantime = "2"
 indexmap = { version = "2.7", features = ["rayon"] }
+image = { version="0.25.5", features = ["png"], default-features = false }
 indicatif = { version = "0.17", features = ["rayon"] }
 itertools = "0.13"
 rayon = "1.10"
