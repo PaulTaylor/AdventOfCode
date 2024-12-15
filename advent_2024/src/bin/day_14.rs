@@ -1,6 +1,6 @@
 use humantime::format_duration;
 use image::{ImageBuffer, Rgb};
-use indicatif::*;
+use indicatif::ProgressIterator;
 use regex::Regex;
 use std::{
     collections::HashMap,
