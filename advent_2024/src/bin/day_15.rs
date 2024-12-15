@@ -34,7 +34,7 @@ fn parse(lines: &[String]) -> (Grid, Coord, String) {
         line_no += 1;
     }
 
-    assert_ne!(robot, (0, 0));
+    assert_ne!(robot, (0, 0), "Robot initial position was not found");
 
     (grid, robot, lines[line_no..].concat().trim().to_string())
 }
@@ -60,8 +60,8 @@ fn tick((mut grid, mut robot): (Grid, Coord), instr: char) -> (Grid, Coord) {
         Some('O') => {
             let mut to_move = vec![new_pos];
             loop {
-                let cand = r#move(*to_move.last().unwrap(), dir);
-                match grid.get(&cand) {
+                let desired = r#move(*to_move.last().unwrap(), dir);
+                match grid.get(&desired) {
                     Some('#') => {
                         // This entire move fails
                         to_move.clear();
@@ -69,7 +69,7 @@ fn tick((mut grid, mut robot): (Grid, Coord), instr: char) -> (Grid, Coord) {
                     }
                     Some('O') => {
                         // Another box in the chain - check it in turn
-                        to_move.push(cand);
+                        to_move.push(desired);
                     }
                     None => {
                         // An empty space - the move succeeds
@@ -96,10 +96,10 @@ fn tick((mut grid, mut robot): (Grid, Coord), instr: char) -> (Grid, Coord) {
 
 fn part_a(lines: &[String]) -> usize {
     let (grid, robot, instr) = parse(lines);
-
-    let (final_grid, _) = instr.chars().fold((grid, robot), tick);
-
-    final_grid
+    instr
+        .chars()
+        .fold((grid, robot), tick)
+        .0
         .into_iter()
         .filter_map(|((x, y), c)| match c {
             'O' => Some(y * 100 + x),
@@ -111,10 +111,9 @@ fn part_a(lines: &[String]) -> usize {
 }
 
 fn push_vertical(grid: &Grid, box_left: Coord, dir: Coord) -> Option<Vec<(Coord, Coord, char)>> {
+    // Define current and desired coordinates for the box
     let (x, y) = box_left;
     let box_right = (x + 1, y);
-
-    // Check what is ahead of the current box
     let next_left = r#move(box_left, dir);
     let next_right = r#move(box_right, dir);
 
@@ -124,12 +123,15 @@ fn push_vertical(grid: &Grid, box_left: Coord, dir: Coord) -> Option<Vec<(Coord,
         res
     };
 
+    // Take the appropriate (possibly recursive) action based on what's currently at the
+    // desired coordinates
     match (grid.get(&next_left), grid.get(&next_right)) {
-        (_, Some('#')) | (Some('#'), _) => None,
-        (None, None) => Some(vec![
-            (box_left, next_left, '['),
-            (box_right, next_right, ']'),
-        ]),
+        (_, Some('#')) | (Some('#'), _) => {
+            None // Would hit the wall
+        }
+        (None, None) => {
+            Some(add_this_move(vec![])) // No-blockers - can move
+        }
         (Some('['), Some(']')) => {
             // Theres a box flush in the way
             push_vertical(grid, next_left, dir).map(add_this_move)
@@ -152,14 +154,12 @@ fn push_vertical(grid: &Grid, box_left: Coord, dir: Coord) -> Option<Vec<(Coord,
             match (lhs_res, rhs_res) {
                 (None, _) | (_, None) => None,
                 (Some(lr), Some(rr)) => {
-                    let mut res: Vec<_> = lr.into_iter().chain(rr).collect();
-                    res.push((box_left, next_left, '['));
-                    res.push((box_right, next_right, ']'));
-                    Some(res)
+                    let res = lr.into_iter().chain(rr).collect();
+                    Some(add_this_move(res))
                 }
             }
         }
-        x => panic!("{x:?}"),
+        _ => unreachable!(),
     }
 }
 
@@ -177,28 +177,27 @@ fn tick_b((mut grid, mut robot): (Grid, Coord), instr: char) -> (Grid, Coord) {
     let new_pos = r#move(robot, dir);
     match grid.get(&new_pos) {
         None => {
-            // Simple move - no blocking boxes
-            robot = new_pos;
+            robot = new_pos; // Simple move - no blocking boxes
         }
         Some('#') => {
-            // Ouch, the robot has hit a wall - noop
+            // The robot has hit a wall - no op
         }
         Some('[' | ']') if dir.1 == 0 => {
-            // Horizontal Moves
+            // Horizontal Moves - use the same logic as in part one
             let mut to_move = vec![(new_pos, if dir.0 == -1 { ']' } else { '[' })];
             loop {
-                let cand = r#move(to_move.last().unwrap().0, dir);
-                match grid.get(&cand) {
+                let desired = r#move(to_move.last().unwrap().0, dir);
+                match grid.get(&desired) {
                     Some('#') => {
                         // This entire move fails
                         to_move.clear();
                         break;
                     }
                     Some(']') => {
-                        to_move.push((cand, ']'));
+                        to_move.push((desired, ']'));
                     }
                     Some('[') => {
-                        to_move.push((cand, '['));
+                        to_move.push((desired, '['));
                     }
                     None => {
                         // An empty space - the move succeeds
@@ -225,54 +224,33 @@ fn tick_b((mut grid, mut robot): (Grid, Coord), instr: char) -> (Grid, Coord) {
             if let Some(moves) = push_vertical(&grid, box_left, dir) {
                 let all_sources: BTreeSet<_> = moves.iter().map(|&(s, _, _)| s).collect();
                 let all_destinations: BTreeSet<_> = moves.iter().map(|&(_, d, _)| d).collect();
-                let to_clear: BTreeSet<_> = all_sources.difference(&all_destinations).collect();
+                let to_clear = all_sources.difference(&all_destinations);
 
-                let moves: BTreeSet<_> = moves.iter().map(|(_, d, v)| (d, v)).collect();
-
-                for (&dest, &v) in moves {
-                    grid.insert(dest, v);
-                }
-                for pos in to_clear {
-                    grid.remove(pos);
-                }
-
-                // And update the robot position
+                grid.extend(moves.iter().map(|(_, d, v)| (d, v)));
+                to_clear.for_each(|s| {
+                    grid.remove(s);
+                });
                 robot = new_pos;
             }
         }
         Some(_) => unreachable!(),
     }
 
-    assert_eq!(box_count, grid.values().filter(|&c| c == &'[').count());
-
     (grid, robot)
 }
 
 fn part_b(lines: &[String]) -> usize {
-    let (grid, robot, instr) = parse(
-        lines
-            .iter()
-            .map(|l| {
-                if l.contains('#') {
-                    let mut new_line = String::new();
-                    for c in l.chars() {
-                        new_line.push_str(match c {
-                            '#' => "##",
-                            'O' => "[]",
-                            '.' => "..",
-                            '@' => "@.",
-                            _ => unreachable!(),
-                        });
-                    }
-                    new_line
-                } else {
-                    l.to_string()
-                }
-            })
-            .collect::<Vec<_>>()
-            .as_slice(),
-    );
+    let new_lines: Vec<_> = lines
+        .iter()
+        .map(|line| {
+            line.replace('#', "##")
+                .replace('O', "[]")
+                .replace('.', "..")
+                .replace('@', "@.")
+        })
+        .collect();
 
+    let (grid, robot, instr) = parse(&new_lines);
     let (final_grid, _) = instr.chars().fold((grid, robot), tick_b);
 
     final_grid
@@ -368,17 +346,17 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^",
 
     #[test]
     fn test_b() {
-        // let input = "#######
-        //         #...#.#
-        //         #.....#
-        //         #..OO@#
-        //         #..O..#
-        //         #.....#
-        //         #######
+        let input = "#######
+                #...#.#
+                #.....#
+                #..OO@#
+                #..O..#
+                #.....#
+                #######
 
-        //         <vv<<^^<<^^";
-        // let lines: Vec<_> = input.lines().map(|l| l.trim().to_string()).collect();
-        // assert_eq!(part_b(&lines), 105 + 205 + 306);
+                <vv<<^^<<^^";
+        let lines: Vec<_> = input.lines().map(|l| l.trim().to_string()).collect();
+        assert_eq!(part_b(&lines), 618);
 
         for (input, _, o) in TEST_INPUTS {
             if let Some(ans) = o {
