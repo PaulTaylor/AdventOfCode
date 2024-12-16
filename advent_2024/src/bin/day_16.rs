@@ -113,13 +113,13 @@ fn solution(lines: &[String]) -> (isize, isize) {
 
                         *dv = alt;
                         queue.retain(|(_, x)| *x != v);
-                        queue.insert((cost, v));
+                        queue.insert((alt, v));
                     }
                 })
                 .or_insert_with(|| {
                     // If the previous cost was INF
                     prev.insert(v, [u].into_iter().collect());
-                    queue.insert((cost, v));
+                    queue.insert((alt, v));
                     alt
                 });
         }
