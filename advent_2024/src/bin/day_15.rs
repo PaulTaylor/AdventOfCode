@@ -164,8 +164,6 @@ fn push_vertical(grid: &Grid, box_left: Coord, dir: Coord) -> Option<Vec<(Coord,
 }
 
 fn tick_b((mut grid, mut robot): (Grid, Coord), instr: char) -> (Grid, Coord) {
-    let box_count = grid.values().filter(|&c| c == &'[').count();
-
     let dir = match instr {
         '<' => (-1, 0),
         '>' => (1, 0),
