@@ -73,7 +73,7 @@ fn dijkstra(blockers: &[Coord], max_dim: isize) -> Option<(usize, VecDeque<Coord
         }
     }
 
-    let mut path: VecDeque<_> = [end].into_iter().collect();
+    let mut path = VecDeque::new();
     let mut prior = Some(&end);
     while let Some(b) = prior {
         path.push_front(*b);
