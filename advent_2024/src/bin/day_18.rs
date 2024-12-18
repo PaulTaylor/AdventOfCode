@@ -1,9 +1,7 @@
 use humantime::format_duration;
-use indicatif::ParallelProgressIterator;
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use regex::Regex;
 use std::{
-    collections::{BTreeSet, HashMap},
+    collections::{BTreeSet, HashMap, VecDeque},
     fs::File,
     io::{BufRead, BufReader},
     time::Instant,
@@ -44,8 +42,9 @@ fn generate_neighbours(u: Coord, blockers: &[Coord], max_dim: isize) -> Vec<Coor
         .collect()
 }
 
-fn dijkstra(blockers: &[Coord], max_dim: isize) -> Option<usize> {
+fn dijkstra(blockers: &[Coord], max_dim: isize) -> Option<(usize, VecDeque<Coord>)> {
     let mut dist = HashMap::new();
+    let mut prev = HashMap::new();
     let mut queue = BTreeSet::new();
 
     let start = (0, 0);
@@ -63,37 +62,54 @@ fn dijkstra(blockers: &[Coord], max_dim: isize) -> Option<usize> {
                         *dv = alt;
                         queue.retain(|(_, x)| *x != v);
                         queue.insert((alt, v));
+                        prev.insert(v, u);
                     }
                 })
                 .or_insert_with(|| {
                     queue.insert((alt, v));
+                    prev.insert(v, u);
                     alt
                 });
         }
     }
 
-    dist.get(&end).copied()
+    let mut path: VecDeque<_> = [end].into_iter().collect();
+    let mut prior = Some(&end);
+    while let Some(b) = prior {
+        path.push_front(*b);
+        prior = prev.get(b);
+    }
+
+    dist.get(&end).copied().map(|v| (v, path))
 }
 
 fn part_a(lines: &[String], max_dim: isize, limit: usize) -> usize {
     let blockers = parse(lines);
-    dijkstra(&blockers[..limit], max_dim).expect("No path found :(")
+    dijkstra(&blockers[..limit], max_dim)
+        .expect("No path found :(")
+        .0
 }
 
 fn part_b(lines: &[String], max_dim: isize, limit: usize) -> String {
-    // Brute force with Rayon providing parallelism - takes ~ 1.2s
     let blockers = parse(lines);
-    (limit..blockers.len())
-        .into_par_iter()
-        .progress()
-        .find_map_first(|l| {
-            if dijkstra(&blockers[..l], max_dim).is_none() {
-                let (bx, by) = blockers[l - 1];
-                return Some(format!("{bx},{by}"));
+    let mut last_path = dijkstra(&blockers[..limit], max_dim);
+
+    // Step through each blocker in turn, generating a new path only when the
+    // old path is blocked by blockers[l].  If the insertion of the new blocker
+    // leads to no path being generated - then we have found our result.
+    for l in limit..blockers.len() {
+        if let Some((_, path)) = &last_path {
+            if path.contains(&blockers[l]) {
+                // Regenerate the path with this blocker in place
+                last_path = dijkstra(&blockers[..=l], max_dim);
             }
-            None
-        })
-        .unwrap()
+        } else {
+            let (bx, by) = blockers[l - 1];
+            return format!("{bx},{by}");
+        }
+    }
+
+    unreachable!()
 }
 
 #[cfg(not(tarpaulin_include))]
