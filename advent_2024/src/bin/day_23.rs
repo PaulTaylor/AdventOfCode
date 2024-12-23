@@ -35,31 +35,34 @@ fn parse(lines: &[String]) -> HashMap<String, BTreeSet<String>> {
 
 fn part_a(lines: &[String]) -> usize {
     let edges = parse(lines);
-    let vertices: BTreeSet<_> = edges.keys().cloned().collect();
 
-    // Find cycles of length 3 in the graph with brute-force path generation
-    let mut candidates: VecDeque<_> = vertices.iter().map(|v| vec![v.to_string()]).collect();
+    // Find cycles of length 3 in the graph with brute-force path generation.
+    // Since all of the cycles we're looking for contain a t* node, we can
+    // just start from those to restrict the search space
+    let mut candidates: VecDeque<_> = VecDeque::new();
+    for (a, b_set) in &edges {
+        if a.starts_with('t') {
+            for b in b_set {
+                candidates.push_back(vec![a.to_string(), b.to_string()]);
+            }
+        }
+    }
+
     let mut cycles = BTreeSet::new();
-
     while let Some(path) = candidates.pop_front() {
         if path.len() == 4 && path[0] == path[3] {
-            cycles.insert(path[0..3].iter().cloned().collect::<BTreeSet<_>>());
+            cycles.insert(path[0..3].iter().sorted().join("-"));
         } else if path.len() < 4 {
-            let mut new = vec![];
             if let Some(to_set) = edges.get(&path[path.len() - 1]) {
                 for next in to_set {
                     let mut np = path.clone();
                     np.push(next.to_string());
-                    new.push(np);
+                    candidates.push_back(np);
                 }
             }
-            candidates.extend(new);
         }
     }
-    cycles
-        .into_iter()
-        .filter(|l| l.iter().any(|v| v.starts_with('t')))
-        .count()
+    cycles.len()
 }
 
 fn bron_kerbosch(
