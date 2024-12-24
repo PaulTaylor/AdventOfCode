@@ -74,19 +74,20 @@ fn find_msb(prefix: char, rules: &VecDeque<Rule>) -> usize {
         .unwrap()
 }
 
-fn run(mut values: HashMap<String, bool>, mut rules: VecDeque<Rule>) -> usize {
-    let max_z = find_msb('z', &rules);
+fn run(mut values: HashMap<String, bool>, rules: &VecDeque<Rule>) -> usize {
+    let max_z = find_msb('z', rules);
+
+    let mut rules = rules.clone();
     while !rules.is_empty() {
         let mut next = VecDeque::new();
-
-        for the_rule in &rules {
-            let &(a, b, op, into) = the_rule;
+        for the_rule in rules {
+            let (a, b, op, into) = the_rule;
 
             if let (Some(&a_val), Some(&b_val)) = (values.get(a), values.get(b)) {
                 let result = op.apply(a_val, b_val);
                 values.insert(into.to_string(), result);
             } else {
-                next.push_back(*the_rule);
+                next.push_back(the_rule);
             }
         }
         rules = next;
@@ -102,7 +103,7 @@ fn run(mut values: HashMap<String, bool>, mut rules: VecDeque<Rule>) -> usize {
 
 fn part_a(lines: &[String]) -> usize {
     let (values, rules) = parse(lines);
-    run(values.clone(), rules)
+    run(values, &rules)
 }
 
 fn write_dot(file_name: &str, rules: &VecDeque<Rule>) -> AResult<()> {
@@ -134,7 +135,6 @@ fn detect_issues(rules: &VecDeque<Rule>, max_x: usize) -> Vec<usize> {
 
     let mut issues = vec![];
     for bit in 0..max_x {
-        let rules = rules.clone();
         let mut values = HashMap::new();
 
         for xy_bit in 0..=max_x {
