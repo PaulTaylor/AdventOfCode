@@ -27,7 +27,7 @@ fn generate_paths(
             let neighbours = singles.iter().filter(|(s, _, _)| *s == u);
             for (_, d, v) in neighbours {
                 let alt = dist.get(&u).unwrap() + 1;
-                let dv = *dist.get(&v).unwrap_or(&i32::MAX);
+                let dv = *dist.get(v).unwrap_or(&i32::MAX);
                 if alt <= dv {
                     queue.insert((alt, *v));
 
