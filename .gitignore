@@ -11,4 +11,8 @@ target/
 
 # VS Code metadata
 .vscode
+
+# Don't add data files
+**/data/*
+
 tarpaulin-report.html
