@@ -15,6 +15,7 @@ image = { version="0.25.5", features = ["png"], default-features = false }
 indicatif = { version = "0.17", features = ["rayon"] }
 itertools = "0.13"
 rayon = "1.10"
+fancy-regex = "0.16.2"
 
 [profile.release]
 strip = "symbols"
