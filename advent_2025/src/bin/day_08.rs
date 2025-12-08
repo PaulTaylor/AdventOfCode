@@ -40,34 +40,11 @@ fn parse(lines: &[String]) -> (Vec<HashSet<Coord>>, BTreeSet<(isize, Coord, Coor
     (circuits, distances)
 }
 
-fn part_a(lines: &[String], n_conn: usize) -> usize {
+fn solve(lines: &[String], n_conn: usize) -> (usize, usize) {
     let (mut circuits, mut distances) = parse(lines);
 
-    for _ in 0..n_conn {
-        if let Some((_d, u, v)) = distances.pop_first() {
-            let (&u_idx, &v_idx) = [
-                circuits.iter().position(|s| s.contains(&u)).unwrap(),
-                circuits.iter().position(|s| s.contains(&v)).unwrap(),
-            ]
-            .iter()
-            .sorted_unstable()
-            .collect_tuple()
-            .unwrap();
-
-            if u_idx != v_idx {
-                let v_set = circuits.remove(v_idx);
-                let u_set = circuits.get_mut(u_idx).unwrap();
-                u_set.extend(v_set);
-            }
-        }
-    }
-
-    circuits.into_iter().map(|s| s.len()).k_largest(3).product()
-}
-
-fn part_b(lines: &[String]) -> usize {
-    let (mut circuits, mut distances) = parse(lines);
-
+    let mut a_res = 0;
+    let mut connection_count = 1;
     while let Some((_d, u, v)) = distances.pop_first() {
         let (&u_idx, &v_idx) = [
             circuits.iter().position(|s| s.contains(&u)).unwrap(),
@@ -84,9 +61,15 @@ fn part_b(lines: &[String]) -> usize {
             u_set.extend(v_set);
         }
 
-        if circuits.len() == 1 {
-            return (u.0 * v.0) as usize;
+        if connection_count == n_conn {
+            a_res = circuits.iter().map(|s| s.len()).k_largest(3).product()
         }
+
+        if circuits.len() == 1 {
+            return (a_res, (u.0 * v.0) as usize);
+        }
+
+        connection_count += 1;
     }
 
     panic!()
@@ -109,8 +92,9 @@ fn main() -> AResult<()> {
 
     // Run the solutions
     let start = Instant::now();
-    println!("Part A result = {}", part_a(lines.as_slice(), 1000));
-    println!("Part B result = {}", part_b(lines.as_slice()));
+    let (a_res, b_res) = solve(&lines, 1000);
+    println!("Part A result = {}", a_res);
+    println!("Part B result = {}", b_res);
     let end = Instant::now();
 
     println!("Run took {}", format_duration(end - start));
@@ -146,12 +130,12 @@ mod tests {
     #[test]
     fn test_a() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_a(lines.as_slice(), 10), 40);
+        assert_eq!(solve(lines.as_slice(), 10).0, 40);
     }
 
     #[test]
     fn test_b() {
         let lines: Vec<_> = TEST_INPUT.lines().map(|l| l.trim().to_string()).collect();
-        assert_eq!(part_b(&lines), 25272);
+        assert_eq!(solve(&lines, usize::MAX).1, 25272);
     }
 }
