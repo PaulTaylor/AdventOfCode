@@ -40,7 +40,7 @@ fn part_a(lines: &[String]) -> usize {
 
     for line in lines {
         for (idx, window) in Vec::from_iter(&breaks).windows(2).enumerate() {
-            let &start = window.get(0).unwrap();
+            let &start = window.first().unwrap();
             let &end = window.get(1).unwrap();
             let str: String = line.chars().take(*end).skip(*start).collect();
 

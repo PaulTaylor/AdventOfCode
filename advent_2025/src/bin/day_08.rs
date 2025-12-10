@@ -11,9 +11,10 @@ use std::{
 type AResult<T> = anyhow::Result<T>;
 type Coord = (isize, isize, isize);
 
+#[allow(clippy::type_complexity)]
 fn parse(lines: &[String]) -> (Vec<HashSet<Coord>>, BTreeSet<(isize, Coord, Coord)>) {
     let junctions: Vec<Coord> = lines
-        .into_iter()
+        .iter()
         .map(|line| -> Coord {
             line.split(',')
                 .filter_map(|s| s.parse().ok())

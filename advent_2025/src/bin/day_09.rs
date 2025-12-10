@@ -12,7 +12,7 @@ type AResult<T> = anyhow::Result<T>;
 
 fn part_a(lines: &[String]) -> usize {
     let coords: Vec<(usize, usize)> = lines
-        .into_iter()
+        .iter()
         .map(|l| {
             l.split(',')
                 .map(|n| n.parse().unwrap())
@@ -34,7 +34,7 @@ fn part_a(lines: &[String]) -> usize {
 
 fn part_b(lines: &[String]) -> usize {
     let corners: Vec<(usize, usize)> = lines
-        .into_iter()
+        .iter()
         .map(|s| {
             s.split(',')
                 .map(|s| s.parse::<usize>().unwrap())
