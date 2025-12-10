@@ -16,6 +16,7 @@ indicatif = { version = "0.17", features = ["rayon"] }
 itertools = "0.13"
 rayon = "1.10"
 fancy-regex = "0.16.2"
+good_lp = { version = "1.14.2", features = ["microlp"], default-features = false }
 
 [profile.release]
 strip = "symbols"
