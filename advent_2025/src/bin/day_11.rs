@@ -22,13 +22,13 @@ fn parse(lines: &[String]) -> HashMap<&str, HashSet<&str>> {
 
 fn _write_dot(adj: &HashMap<&str, HashSet<&str>>, file_name: &str) {
     let mut file = File::create(file_name).unwrap();
-    file.write(b"digraph G {\n").unwrap();
+    let _ = file.write(b"digraph G {\n").unwrap();
     for (src, targets) in adj {
         for tgt in targets {
             file.write_fmt(format_args!("{src} -> {tgt};\n")).unwrap()
         }
     }
-    file.write(b"}\n").unwrap();
+    let _ = file.write(b"}\n").unwrap();
 }
 
 fn part_a(lines: &[String]) -> usize {
